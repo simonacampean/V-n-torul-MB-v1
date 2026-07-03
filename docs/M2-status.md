@@ -45,3 +45,32 @@ moderării anunțurilor native, criteriu explicit de acceptare M2).
 - Panoul admin complet (AD-01, AD-03, AD-04) — M5.
 - Marcarea `expired` a ofertelor dispărute din sursă — nu era testabil fără un flux real repetat de
   re-verificare; de revizitat când I-01 (conectoare API) prinde contur.
+
+## Adăugare peste scopul inițial M2: rutină de cercetare programată + drafturi
+Beneficiarul a cerut import „automat, 24/24, fără intervenție umană" al raportului agentului (I-02).
+Am clarificat: automatizare completă (scraping sistematic al mobile.de/AutoScout24/etc.) ar încălca
+I-04 din caiet și ToS-ul acelor platforme — risc real de penalizări. Soluție adoptată, cu acordul
+beneficiarului:
+- **Migrare `0006_agent_report_drafts.sql`** — tabelă nouă, RLS admin-only.
+- **`POST /api/agent-report`** — endpoint protejat prin token bearer (`AGENT_REPORT_TOKEN`), primește
+  raportul generat de o rutină Claude programată și îl stochează ca „draft" — **nu importă automat**.
+- **Rutină Claude programată** (`vanatorul-mb-agent-research`, la fiecare 6 ore) — face cercetare web
+  generală (nu scraping sistematic al platformelor țintă), compilează raportul și îl trimite la endpoint.
+  Notă pentru beneficiar: rulează doar cât timp aplicația Claude e deschisă pe mașina lui; dacă e
+  închisă la momentul programat, task-ul rulează la următoarea deschidere — nu e infrastructură
+  cloud complet independentă.
+- Aprobarea rămâne manuală, din `/admin/oferte` (om în buclă la decizia finală, chiar dacă cercetarea
+  e automatizată).
+
+## Deploy — infrastructură rezolvată în această sesiune
+Proiectul nu era deloc un repo git și nu avea niciun commit. Am inițializat git, am creat primul
+commit (M0+M1+M2) și l-am publicat pe `https://github.com/simonacampean/V-n-torul-MB-v1`. Conectarea
+GitHub↔Vercel prin dashboard a întâmpinat obstacole (permisiuni GitHub App) — am publicat direct prin
+`vercel --prod` (autentificat prin `npx vercel login`), proiectul e live pe
+**https://vanatorul-mb.vercel.app** cu tot codul din M1+M2. Am găsit și reparat o variabilă de mediu
+greșit setată pe Vercel (`NEXT_PUBLIC_SITE_URL` era goală, ar fi stricat redirect-ul de confirmare
+email în producție).
+
+**De rezolvat separat (nu blochează M2):** conectarea GitHub→Vercel pentru deploy automat la fiecare
+push rămâne neterminată (permisiunea GitHub App pentru acest repo specific) — deploy-urile viitoare
+necesită `vercel --prod` manual până se rezolvă.
