@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/oferte', label: 'Top oferte' },
   { href: '/cont/oferte/import', label: 'Importă raport agent' },
   { href: '/cont/oferte/publica', label: 'Publică anunț' },
+  { href: '/cont/preferinte', label: 'Preferințe & alerte' },
   { href: '/cont/ghid', label: 'Ghid & RO' },
   { href: '/cont/securitate', label: 'Securitate (2FA)' },
   { href: '/cont/date', label: 'Datele mele' },
