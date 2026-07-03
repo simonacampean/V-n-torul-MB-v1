@@ -17,10 +17,13 @@ function safeEqual(a: string, b: string): boolean {
 }
 
 /**
- * S-02/S-03/S-04 — rulat de Vercel Cron (vercel.json), la 5 minute după
- * recalcularea orară a scorurilor (S-01, pg_cron). Găsește ofertele care
- * merită o alertă (excelentă sau scădere de preț ≥10%) și trimite email prin
- * Resend — un digest zilnic la planul gratuit, instant per-ofertă la premium.
+ * S-02/S-03/S-04 — rulat de Vercel Cron (vercel.json), o dată pe zi (planul
+ * Hobby Vercel nu permite cron mai frecvent; scorurile tot se recalculează
+ * orar prin pg_cron — S-01 — doar dispecerizarea emailurilor e zilnică).
+ * Găsește ofertele care merită o alertă (excelentă sau scădere de preț ≥10%)
+ * și trimite email prin Resend — un digest zilnic la planul gratuit, instant
+ * per-ofertă la premium (pregătit pentru M4, necesită plan Vercel Pro pt.
+ * cron mai frecvent dacă se dorește „instant" cu adevărat).
  */
 export async function GET(request: NextRequest) {
   const expected = process.env.CRON_SECRET;
