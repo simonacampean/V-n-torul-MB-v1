@@ -114,6 +114,41 @@ h1.brand .red { color: var(--red); }
 .hdr-nav a:visited { color: var(--panel); }
 .hdr-nav a:hover, .hdr-nav a:focus-visible { border-bottom-color: var(--red); }
 
+/* Meniul global drop-down (buton ☰ lângă siglă) */
+.sitemenu { position: relative; display: flex; align-items: center; }
+.sitemenu-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: var(--touch-min); height: var(--touch-min); min-height: var(--touch-min);
+  padding: 0; background: transparent; border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: var(--radius); color: var(--panel); cursor: pointer;
+}
+.sitemenu-btn:hover, .sitemenu-btn:focus-visible { border-color: var(--red); color: var(--red); }
+.sitemenu-drop {
+  position: absolute; top: calc(100% + 10px); left: 0; z-index: 50;
+  min-width: 230px; padding: 8px;
+  background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  display: flex; flex-direction: column; gap: 2px;
+}
+.sitemenu-drop a {
+  color: var(--ink); text-decoration: none; font-size: 13px;
+  padding: 10px 12px; border-radius: 2px;
+  min-height: var(--touch-min); display: flex; align-items: center;
+}
+.sitemenu-drop a:hover, .sitemenu-drop a:focus-visible { background: var(--paper); color: var(--red); }
+.sitemenu-drop a.on { background: var(--ink); color: var(--panel); }
+
+/* Antet compact pe ecrane mici: sigla nu se rupe, linkurile duplicate în
+   meniul ☰ se ascund (rămân doar cele de autentificare/cont). */
+h1.brand { white-space: nowrap; }
+@media (max-width: 600px) {
+  .eyebrow { display: none; }
+  h1.brand { font-size: 18px; }
+  .hdr-nav.hide-sm { display: none; }
+  .hdr-top { flex-wrap: wrap; }
+  .hdr-nav a { white-space: nowrap; }
+}
+
 main { padding: 18px 0 10px; }
 
 /* ===== Componente Datenkarte (portate din v5) ===== */
@@ -277,6 +312,9 @@ footer.site .in {
 .ob.hist { background: #E4F0EA; color: var(--green); border-color: #BFDCCB; }
 .ob.exc { background: var(--green); color: #fff; border-color: var(--green); }
 .obreak { font-family: var(--font-mono); font-size: 10px; color: var(--plateedge); margin-top: 6px; }
+.vinlinks { font-size: 11px; color: var(--inksoft); margin-top: 8px; }
+.vinlinks a { color: var(--red); font-weight: 600; text-decoration: none; }
+.vinlinks a:hover, .vinlinks a:focus-visible { text-decoration: underline; }
 .agent-import textarea { min-height: 110px; font-family: var(--font-mono); font-size: 12px; resize: vertical; }
 .agentmsg { font-family: var(--font-mono); font-size: 11px; padding: 8px 12px; border-radius: 2px; margin-top: 8px; }
 .agentmsg.ok { background: #E4F0EA; color: var(--green); border: 1px solid #BFDCCB; }
@@ -290,3 +328,29 @@ footer.site .in {
   font-family: var(--font-mono); font-size: 11px; color: var(--inksoft);
   border: 1px dashed var(--line); border-radius: var(--radius); padding: 12px; line-height: 1.6;
 }
+
+/* ===== Publicitate (AD-03) ===== */
+.ad {
+  border: 1px dashed var(--plateedge); border-radius: 2px;
+  background: repeating-linear-gradient(45deg, var(--panel), var(--panel) 10px, #F3F4F6 10px, #F3F4F6 20px);
+  display: flex; align-items: center; justify-content: center; color: var(--plateedge);
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+  margin: 0 0 18px; text-align: center; padding: 8px;
+}
+.ad.banner { min-height: 90px; }
+.ad.infeed { min-height: 110px; margin: 0 0 16px; }
+.ad.footer { min-height: 100px; margin: 18px 0 0; }
+.ad a { color: inherit; text-decoration: none; display: block; width: 100%; }
+.ad img { max-width: 100%; display: block; margin: 0 auto; }
+
+/* ===== Consimțământ cookie (GDPR-03) ===== */
+.cookiebar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+  background: var(--ink); color: var(--panel);
+  padding: 16px 20px calc(env(safe-area-inset-bottom, 0px) + 16px);
+  display: flex; flex-wrap: wrap; gap: 14px; align-items: center; justify-content: space-between;
+  box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.18);
+}
+.cookiebar p { font-size: 13px; line-height: 1.5; max-width: 640px; color: var(--panel); margin: 0; }
+.cookiebar .btnrow { margin-top: 0; }
+.cookiebar .btn { min-width: 130px; }

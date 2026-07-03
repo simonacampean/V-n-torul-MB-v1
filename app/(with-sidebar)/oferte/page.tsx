@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { getTargetModels, fmt } from '@/lib/models';
 import { condOf, trCost, offerTotal, EXC_THRESHOLD } from '@/lib/scoring';
 import { NEG_LABEL } from '@/lib/hunt';
+import { historyCheckLinks } from '@/lib/affiliates';
+import AdSlot from '@/components/AdSlot';
 
 interface OfferRow {
   id: string;
@@ -57,6 +59,7 @@ export default async function OfertePage({
 
   const shownModels = modelFilter && modelFilter !== 'TOATE' ? [modelFilter] : models.map((m) => m.code);
   const excTotal = offers.filter((o) => o.excellent).length;
+  const vinLinks = historyCheckLinks();
 
   return (
     <main className="wrap" style={{ paddingTop: 32, paddingBottom: 48 }}>
@@ -102,11 +105,12 @@ export default async function OfertePage({
         </div>
       )}
 
-      {shownModels.map((code) => {
+      {shownModels.map((code, gi) => {
         const grp = byModel.get(code);
         if (!grp || !grp.length) return null;
         return (
           <div key={code}>
+            {gi === 1 && <AdSlot position="infeed" />}
             <div className="seclabel" style={{ marginTop: 16 }}>
               ▸ {code} — top {grp.length}
             </div>
@@ -152,6 +156,19 @@ export default async function OfertePage({
                     )}
                   </div>
                   {o.note && <div style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 8 }}>{o.note}</div>}
+                  {!o.history_verified && (
+                    <div className="vinlinks mono">
+                      Verifică istoricul (raport VIN, ~20–30 €):{' '}
+                      {vinLinks.map((l, li) => (
+                        <span key={l.name}>
+                          {li > 0 && ' · '}
+                          <a href={l.url} target="_blank" rel="noopener noreferrer sponsored">
+                            {l.name} ↗
+                          </a>
+                        </span>
+                      ))}
+                    </div>
+                  )}
                   <div className="obreak">scor: preț/stare + dotări + istoric + negociere + aducere + km</div>
                   {o.url && (
                     <div className="btnrow">
@@ -166,6 +183,8 @@ export default async function OfertePage({
           </div>
         );
       })}
+
+      <AdSlot position="footer" />
     </main>
   );
 }

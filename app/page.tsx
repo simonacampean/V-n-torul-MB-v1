@@ -1,4 +1,5 @@
 import Blueprint from '@/components/Blueprint';
+import AdSlot from '@/components/AdSlot';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
@@ -18,7 +19,9 @@ export default async function Home() {
           </p>
 
           {models.map((m, i) => (
-            <article className="card" key={m.code}>
+            <div key={m.code}>
+              {i === 2 && <AdSlot position="infeed" />}
+            <article className="card">
               <div className="row">
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <span className="plate">{m.code}</span>
@@ -72,6 +75,7 @@ export default async function Home() {
                 </div>
               </div>
             </article>
+            </div>
           ))}
 
           <p className="meta mono" style={{ maxWidth: 760 }}>
@@ -82,6 +86,7 @@ export default async function Home() {
 
       <footer className="site">
         <div className="wrap">
+          <AdSlot position="footer" />
           <div className="in">
             VÂNĂTORUL MB v2.0 · platformă pentru pasionații de Mercedes clasice
           </div>

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { signOut } from '@/app/(auth)/actions';
+import AdSlot from '@/components/AdSlot';
 
 export default async function ContPage() {
   const supabase = await createClient();
@@ -21,6 +22,7 @@ export default async function ContPage() {
 
   return (
     <div style={{ maxWidth: 420 }}>
+      <AdSlot position="banner" />
       <h1 className="page-title">Contul meu</h1>
       <p style={{ marginTop: 12 }}>Autentificat ca {user.email}.</p>
       <form action={signOut} style={{ marginTop: 20 }}>

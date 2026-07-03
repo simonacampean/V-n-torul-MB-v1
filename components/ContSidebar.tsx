@@ -12,12 +12,16 @@ const LINKS = [
   { href: '/cont/oferte/import', label: 'Importă raport agent' },
   { href: '/cont/oferte/publica', label: 'Publică anunț' },
   { href: '/cont/preferinte', label: 'Preferințe & alerte' },
+  { href: '/cont/abonament', label: 'Abonament' },
   { href: '/cont/ghid', label: 'Ghid & RO' },
   { href: '/cont/securitate', label: 'Securitate (2FA)' },
   { href: '/cont/date', label: 'Datele mele' },
 ];
 
-const ADMIN_LINKS = [{ href: '/admin/oferte', label: 'Moderare anunțuri' }];
+const ADMIN_LINKS = [
+  { href: '/admin/oferte', label: 'Moderare anunțuri' },
+  { href: '/admin/publicitate', label: 'Publicitate' },
+];
 
 export default function ContSidebar({ email, isAdmin }: { email: string | null; isAdmin: boolean }) {
   const pathname = usePathname();

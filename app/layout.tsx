@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Mono } from 'next/font/google';
 import SiteHeader from '@/components/SiteHeader';
+import ConsentDefaultScript from '@/components/ConsentDefaultScript';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
+import AdSenseLoader from '@/components/AdSenseLoader';
 import './globals.css';
 
 /* Fonturile Datenkarte prin next/font: self-hosted la build, zero blocaj de
@@ -36,8 +39,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ro" className={`${archivo.variable} ${plexMono.variable}`}>
       <body>
+        <ConsentDefaultScript />
         <SiteHeader />
         {children}
+        <CookieConsentBanner />
+        <AdSenseLoader />
       </body>
     </html>
   );
