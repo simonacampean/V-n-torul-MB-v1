@@ -9,11 +9,13 @@ Acest repo este punctul de pornire al platformei SaaS „Vânătorul MB". Benefi
 
 Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietul de sarcini pentru arhitectură/securitate.
 
-## Stadiul curent (actualizat 03.07.2026)
+## Stadiul curent (actualizat 04.07.2026)
 - M0 în mare parte livrat — detalii: `docs/M0-status.md`. Rămas: verificarea Lighthouse mobile ≥ 90 (nemăsurat încă în mediul de lucru curent).
 - **M1 complet** (Auth + 2FA TOTP + F-01…F-04, F-06…F-07 pe conturi) — detalii: `docs/M1-status.md`.
-- **M2 complet** (Motorul de oferte: schema `offers`, scoring S-01 via pg_cron, import I-02 cu deduplicare I-05, publicare nativă I-03 cu moderare AD-02) — detalii: `docs/M2-status.md`. Toate criteriile de acceptare din caiet (secțiunea 9) verificate, inclusiv teste live pe Supabase Cloud (RLS real, nu doar logică JS).
-- Următorul milestone: **M3 — Notificări** (preferințe utilizator, alerte email prin Resend, digest zilnic/instant, dezabonare, web push opțional) — nu începe fără confirmarea explicită a beneficiarului.
+- **M2 complet** (Motorul de oferte: schema `offers`, scoring S-01 via pg_cron, import I-02 cu deduplicare I-05, publicare nativă I-03 cu moderare AD-02) — detalii: `docs/M2-status.md`.
+- **M3 complet** (Notificări: preferințe S-05, alerte email S-02/S-03 prin Resend, digest anti-spam S-04, dezabonare cu un click) — detalii: `docs/M3-status.md`. Verificat live: email real ajuns în inbox, anti-spam confirmat, dezabonare funcțională.
+- Proiectul e live pe **https://vanatorul-mb.vercel.app**, cu deploy automat la fiecare push pe `main` (repo: `github.com/simonacampean/V-n-torul-MB-v1`). Cron job-urile Vercel rulează pe plan Hobby — max o dată/zi.
+- Următorul milestone: **M4 — Monetizare** (Stripe, gating funcții premium, modul publicitate AD-03, linkuri afiliere) — nu începe fără confirmarea explicită a beneficiarului.
 
 ## Fluxul de lucru
 - Respectă ordinea milestone-urilor M0 → M5 din caiet. Nu începe un milestone nou înainte ca criteriile de acceptare ale celui curent să treacă.
@@ -28,9 +30,9 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 4. **Securitate reală, nu decorativă:** RLS pe toate datele de utilizator (testul user-A-nu-vede-user-B e obligatoriu), MFA prin Supabase (nu criptografie proprie), validare server-side cu zod, sanitizare la afișare.
 5. **GDPR:** export date, ștergere cont, consimțământ cookie (Consent Mode v2) — cerințe de lansare, nu „nice to have".
 
-## Primele sarcini (M3 — Notificări)
-1. `user_prefs` (deja definit în `0001_schema.sql`): modele urmărite, prag alertă, buget maxim, țări preferate — UI de editare pe cont.
-2. S-02: la trecerea unui anunț peste pragul 85 (sau scădere preț ≥10%), generează notificare pentru userii care urmăresc modelul și au alerta activă.
-3. S-03: integrare Resend, șablon HTML Datenkarte (titlu, scor, badge-uri, preț + la cheie RO, buton „Deschide anunțul").
-4. S-04: anti-spam — max 1 digest/zi la planul gratuit, alerte instant la premium (planul premium vine abia la M4 — pentru M3 tratează toți userii ca „gratuit"); link de dezabonare cu un click.
-5. Verifică criteriile de acceptare M3 din caiet, apoi raportează beneficiarului.
+## Primele sarcini (M4 — Monetizare)
+1. Stripe: plan premium lunar/anual, checkout + portal de gestionare abonament (`subscriptions` deja definit în `0001_schema.sql`).
+2. Gating-ul funcțiilor premium — alertele „instant" (S-04) devin reale abia acum (`isPremiumActive` din `lib/notifications.ts` e deja pregătit); necesită și upgrade la Vercel Pro pentru cron mai frecvent decât o dată/zi.
+3. Modulul de publicitate AD-03 cu CMP conform GDPR-03 (Consent Mode v2).
+4. Linkuri de afiliere (carVertical/autoDNA) în fluxul de verificare istoric.
+5. Verifică criteriile de acceptare M4 din caiet, apoi raportează beneficiarului.
