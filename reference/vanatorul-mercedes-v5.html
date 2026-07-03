@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#22262B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Vânătorul MB">
+<meta name="description" content="Platformă pentru pasionații de Mercedes-Benz clasice: modele-țintă, căutare în toată Europa, evaluator de prețuri pe grade de stare și alerte de chilipiruri.">
+<link rel="manifest" href='data:application/manifest+json,{"name":"Vânătorul MB","short_name":"VânătorulMB","display":"standalone","background_color":"%23EDEFF1","theme_color":"%2322262B","start_url":"."}'>
+<title>Vânătorul MB — Investiții Mercedes clasice</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+:root{
+  --ink:#22262B; --inksoft:#4A5058; --paper:#EDEFF1; --panel:#FAFBFC;
+  --line:#C9CED4; --linesoft:#DDE1E5; --red:#B3121B; --green:#2E6B4F;
+  --amber:#9A6A00; --plate:#D6DADF; --plateedge:#9FA6AE;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Archivo',system-ui,sans-serif;background:var(--paper);color:var(--ink);min-height:100vh}
+.mono{font-family:'IBM Plex Mono',ui-monospace,monospace}
+.wrap{max-width:1000px;margin:0 auto;padding:0 20px}
+header{background:var(--ink);padding:calc(env(safe-area-inset-top,0px) + 14px) 0 14px;position:sticky;top:0;z-index:40;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.hdr-top{display:flex;justify-content:space-between;align-items:center;gap:12px}
+h1{font-size:22px;font-weight:800;color:var(--panel);letter-spacing:.5px;line-height:1.1}
+h1 .red{color:var(--red)}
+.eyebrow{font-size:9px;letter-spacing:2px;color:var(--plateedge)}
+.burger{width:46px;height:46px;border:1px solid #3A4048;background:transparent;border-radius:3px;cursor:pointer;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:5px;flex:none}
+.burger span{display:block;width:20px;height:2px;background:var(--panel);transition:.2s}
+.burger.open span:nth-child(1){transform:translateY(7px) rotate(45deg)}
+.burger.open span:nth-child(2){opacity:0}
+.burger.open span:nth-child(3){transform:translateY(-7px) rotate(-45deg)}
+.hdr-right{display:flex;align-items:center;gap:10px}
+.hdr-badges{display:flex;flex-direction:column;align-items:flex-end;gap:4px}
+.status{font-size:10px;padding:5px 9px;border-radius:2px;border:1px solid}
+.status.done{border-color:var(--green);color:#7FC8A4}
+.status.todo{border-color:var(--red);color:#E8888D}
+.bargain-count{font-size:10px;padding:4px 9px;border-radius:2px;background:var(--red);color:#fff}
+@media(max-width:560px){.hdr-badges{display:none}}
+/* ===== DRAWER (hamburger) ===== */
+.drawer-veil{position:fixed;inset:0;background:rgba(34,38,43,.55);z-index:60}
+.drawer{position:fixed;top:0;left:0;bottom:0;width:300px;max-width:84vw;background:var(--ink);z-index:61;padding:calc(env(safe-area-inset-top,0px) + 20px) 0 20px;display:flex;flex-direction:column;box-shadow:8px 0 32px rgba(0,0,0,.35);animation:slidein .22s ease}
+@keyframes slidein{from{transform:translateX(-100%)}to{transform:none}}
+@media (prefers-reduced-motion:reduce){.drawer{animation:none}}
+.drawer .brand{padding:0 22px 16px;border-bottom:1px solid #3A4048}
+.drawer .brand h2{font-size:20px;font-weight:800;color:var(--panel)}
+.drawer .brand h2 .red{color:var(--red)}
+.drawer .brand .mono{font-size:10px;color:var(--plateedge);letter-spacing:1.5px}
+.drawer nav{display:flex;flex-direction:column;padding:10px 12px;gap:2px}
+.drawer nav button{display:flex;justify-content:space-between;align-items:center;width:100%;text-align:left;font-family:'Archivo';font-size:15px;font-weight:600;color:#C6CBD1;background:transparent;border:none;padding:14px 12px;border-radius:3px;cursor:pointer;min-height:48px}
+.drawer nav button.on{background:#31363D;color:var(--panel)}
+.drawer nav button .cnt{font-family:'IBM Plex Mono';font-size:11px;color:var(--plateedge)}
+.drawer .dstats{margin-top:auto;padding:14px 22px;border-top:1px solid #3A4048}
+.drawer .dstats .row2{display:flex;justify-content:space-between;font-family:'IBM Plex Mono';font-size:11px;color:var(--plateedge);padding:4px 0}
+.drawer .dstats .row2 b{color:var(--panel)}
+.drawer .dactions{padding:10px 12px 0;display:flex;flex-direction:column;gap:6px}
+.drawer .dactions button{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;padding:11px;border-radius:2px;border:1px solid #3A4048;background:transparent;color:#C6CBD1;cursor:pointer}
+main{padding:18px 0 10px}
+.fade{animation:fade .35s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fade{animation:none}}
+.card{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:3px;padding:18px;margin-bottom:16px}
+.card.flat{border-left:1px solid var(--line)}
+.plate{display:inline-flex;align-items:center;font-family:'IBM Plex Mono';font-weight:600;letter-spacing:2px;font-size:13px;padding:4px 12px;background:linear-gradient(180deg,var(--plate),#C2C7CD);border:1px solid var(--plateedge);border-radius:3px;box-shadow:inset 0 1px 0 rgba(255,255,255,.7),0 1px 2px rgba(0,0,0,.15);text-shadow:0 1px 0 rgba(255,255,255,.5)}
+.plate.sm{font-size:11px;padding:2px 8px}
+.row{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.mname{font-size:17px;font-weight:700}
+.meta{font-size:11px;color:var(--inksoft);margin-top:2px}
+.price{font-size:14px;font-weight:600;color:var(--red)}
+.band{font-size:11px;color:var(--inksoft)}
+.thesis{font-size:14px;line-height:1.55;color:var(--inksoft);margin-top:12px}
+.tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.tag{font-family:'IBM Plex Mono';font-size:11px;padding:2px 8px;border:1px solid var(--linesoft);border-radius:2px;color:var(--inksoft);background:var(--paper)}
+.seclabel{font-family:'IBM Plex Mono';font-size:11px;text-transform:uppercase;letter-spacing:2px;color:var(--red);margin:0 0 10px}
+.btn{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;padding:10px 14px;border-radius:2px;border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;min-height:40px}
+.btn.primary{background:var(--red);color:#fff;border-color:var(--red)}
+.btn.dark{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn.ok{background:var(--green);color:#fff;border-color:var(--green)}
+.btn:disabled{background:var(--linesoft);color:var(--inksoft);border-color:var(--linesoft);cursor:default}
+.btnrow{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.fisa{border-top:1px dashed var(--line);margin-top:14px;padding-top:12px}
+.fisa li{display:flex;gap:8px;font-size:14px;color:var(--inksoft);margin-bottom:6px;list-style:none}
+.fisa .num{font-family:'IBM Plex Mono';color:var(--red)}
+.verdict{font-family:'IBM Plex Mono';font-size:11px;margin-top:10px;padding:8px 12px;background:var(--paper);border:1px solid var(--linesoft);border-radius:2px}
+.verdict b{color:var(--red)}
+.blueprint{background:var(--paper);border:1px solid var(--linesoft);border-radius:2px;margin-top:14px;padding:10px 14px 6px;position:relative;overflow:hidden}
+.blueprint svg{width:100%;height:auto;display:block;max-height:150px}
+.blueprint .bp-label{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:1.5px;color:var(--plateedge);text-transform:uppercase}
+.blueprint .gal{position:absolute;right:10px;bottom:8px;font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--red);text-decoration:none;background:var(--panel);border:1px solid var(--line);border-radius:2px;padding:6px 10px}
+.modelbtns{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:18px}
+.modelbtns button{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;letter-spacing:1px;padding:10px 14px;border-radius:2px;border:1px solid var(--line);background:var(--panel);color:var(--inksoft);cursor:pointer;min-height:40px}
+.modelbtns button.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.grid3{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;margin-bottom:8px}
+.plat{display:block;background:var(--panel);border:1px solid var(--line);border-radius:3px;padding:14px;text-decoration:none;color:var(--ink)}
+.plat .nm{font-weight:700;font-size:14px}
+.plat .co{font-family:'IBM Plex Mono';font-size:10px;padding:2px 6px;background:var(--paper);border:1px solid var(--linesoft);border-radius:2px;color:var(--inksoft);float:right}
+.plat .nt{font-size:12px;color:var(--inksoft);margin-top:4px}
+.plat .foot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.plat .go{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;color:var(--red)}
+.neg{font-family:'IBM Plex Mono';font-size:10px;font-weight:500;padding:2px 6px;border-radius:2px}
+.neg.da{background:#E4F0EA;color:var(--green)}
+.neg.part{background:#F5EDDA;color:var(--amber)}
+.neg.nu{background:#F7E3E4;color:var(--red)}
+.neg.ref{background:var(--paper);color:var(--inksoft)}
+.gnote{font-size:12px;color:var(--inksoft);background:var(--panel);border:1px dashed var(--line);border-radius:2px;padding:8px 12px;margin-bottom:12px;max-width:800px}
+.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.formgrid{grid-template-columns:1fr}}
+input,select{font-family:'Archivo';font-size:16px;padding:11px 12px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink);width:100%}
+select{font-family:'IBM Plex Mono';font-size:14px}
+.pv{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;margin-top:4px}
+.chip{font-family:'IBM Plex Mono';font-size:11px;font-weight:600;padding:2px 8px;border-radius:2px;border:1px solid var(--linesoft)}
+.chip.chilipir{background:var(--red);color:#fff;border-color:var(--red)}
+.chip.drop{background:#E4F0EA;color:var(--green);border-color:#BFDCCB}
+.chip.stale{background:#F5EDDA;color:var(--amber);border-color:#E4D4A8}
+.score{font-family:'IBM Plex Mono';font-size:19px;font-weight:600}
+.score small{font-size:11px;color:var(--inksoft)}
+.crit{display:grid;grid-template-columns:1fr 1fr;gap:6px 16px;border-top:1px dashed var(--linesoft);margin-top:12px;padding-top:10px}
+@media(max-width:640px){.crit{grid-template-columns:1fr}}
+.crit label{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--inksoft);cursor:pointer;min-height:28px}
+.crit input{width:auto;transform:scale(1.15)}
+.crit .w{font-family:'IBM Plex Mono';color:var(--line)}
+.lrow{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+.lrow select{width:auto;font-size:12px;padding:8px}
+.candidate{font-family:'IBM Plex Mono';font-size:11px;padding:4px 8px;background:#E4F0EA;color:var(--green);border-radius:2px}
+.del{margin-left:auto;color:var(--red)!important}
+.ghid li{font-size:14px;line-height:1.6;color:var(--inksoft);margin-bottom:10px;list-style:none}
+.ghid b{color:var(--ink)}
+.note{font-family:'IBM Plex Mono';font-size:11px;color:var(--inksoft);border:1px dashed var(--line);border-radius:3px;padding:12px;line-height:1.6}
+.empty{font-family:'IBM Plex Mono';font-size:13px;color:var(--inksoft);border:1px dashed var(--line);border-radius:3px;padding:28px;text-align:center;line-height:1.7}
+footer{padding:14px 0 calc(env(safe-area-inset-bottom,0px) + 24px)}
+footer .in{font-family:'IBM Plex Mono';font-size:11px;color:var(--plateedge);border-top:1px solid var(--line);padding-top:12px}
+.overlay{position:fixed;inset:0;background:rgba(34,38,43,.72);display:flex;align-items:center;justify-content:center;padding:16px;z-index:70}
+.popup{background:var(--panel);border:2px solid var(--red);border-radius:4px;box-shadow:0 16px 48px rgba(0,0,0,.4);max-width:440px;width:100%;padding:22px;max-height:88vh;overflow:auto}
+.popup.wide{max-width:760px;border-color:var(--ink)}
+.popup .badge{display:inline-block;font-family:'IBM Plex Mono';font-size:11px;letter-spacing:2px;background:var(--red);color:#fff;padding:5px 10px;border-radius:2px;animation:pulse 1.2s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(179,18,27,.35)}50%{box-shadow:0 0 0 8px rgba(179,18,27,0)}}
+@media (prefers-reduced-motion:reduce){.popup .badge{animation:none}}
+.popup h3{font-size:18px;font-weight:800;margin-top:10px}
+.popup .pm{font-family:'IBM Plex Mono';font-size:13px;color:var(--red);margin-top:4px}
+.popup p{font-size:14px;line-height:1.55;color:var(--inksoft);margin-top:12px}
+.popup p b{color:var(--ink)}
+.popup .close{width:100%;margin-top:16px}
+.savefail{font-family:'IBM Plex Mono';font-size:11px;background:#F7E3E4;border:1px solid var(--red);color:var(--red);border-radius:2px;padding:8px 12px;margin-bottom:14px}
+.onb{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--red);border-radius:3px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:var(--inksoft);line-height:1.6}
+.onb b{color:var(--ink)}
+/* toolbar listă */
+.toolbar{display:grid;grid-template-columns:1fr auto auto auto;gap:8px;margin-bottom:14px}
+@media(max-width:720px){.toolbar{grid-template-columns:1fr 1fr}}
+.toolbar input,.toolbar select{font-size:13px;padding:9px 10px}
+/* comparator */
+.cmpbar{position:fixed;left:0;right:0;bottom:0;background:var(--ink);z-index:45;padding:10px 0 calc(env(safe-area-inset-bottom,0px) + 10px)}
+.cmpbar .wrap{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.cmpbar .t{font-family:'IBM Plex Mono';font-size:12px;color:var(--panel)}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px;margin-top:12px}
+.cmp-table th,.cmp-table td{border:1px solid var(--linesoft);padding:8px;text-align:left;vertical-align:top}
+.cmp-table th{font-family:'IBM Plex Mono';font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--inksoft);background:var(--paper);white-space:nowrap}
+.cmp-table td b{font-size:13px}
+.cmpchk{display:flex;align-items:center;gap:6px;font-family:'IBM Plex Mono';font-size:11px;color:var(--inksoft);cursor:pointer}
+.cmpchk input{width:auto;transform:scale(1.2)}
+.hist{font-family:'IBM Plex Mono';font-size:10px;color:var(--inksoft);margin-top:4px}
+/* ===== TAB AGENT / TOP OFERTE ===== */
+.agent-import textarea{width:100%;min-height:110px;font-family:'IBM Plex Mono';font-size:12px;padding:10px;border:1px solid var(--line);border-radius:2px;background:var(--paper);color:var(--ink);resize:vertical}
+.agentmsg{font-family:'IBM Plex Mono';font-size:11px;padding:8px 12px;border-radius:2px;margin-top:8px}
+.agentmsg.ok{background:#E4F0EA;color:var(--green);border:1px solid #BFDCCB}
+.agentmsg.err{background:#F7E3E4;color:var(--red);border:1px solid var(--red)}
+.offer{background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--ink);border-radius:3px;padding:14px;margin-bottom:12px;position:relative}
+.offer.exc{border-color:var(--green);border-left-color:var(--green);box-shadow:0 0 0 1px #BFDCCB}
+.rank{position:absolute;top:-1px;right:-1px;font-family:'IBM Plex Mono';font-size:11px;font-weight:600;background:var(--ink);color:var(--panel);padding:4px 10px;border-radius:0 3px 0 3px}
+.offer.exc .rank{background:var(--green)}
+.oscore{font-family:'IBM Plex Mono';font-size:22px;font-weight:600;line-height:1}
+.oscore small{font-size:10px;color:var(--inksoft)}
+.obadges{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.ob{font-family:'IBM Plex Mono';font-size:10px;font-weight:600;padding:3px 7px;border-radius:2px;border:1px solid var(--linesoft);color:var(--inksoft)}
+.ob.full{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.ob.hist{background:#E4F0EA;color:var(--green);border-color:#BFDCCB}
+.ob.exc{background:var(--green);color:#fff;border-color:var(--green)}
+.obreak{font-family:'IBM Plex Mono';font-size:10px;color:var(--plateedge);margin-top:6px}
+.ad{border:1px dashed var(--plateedge);border-radius:2px;background:repeating-linear-gradient(45deg,var(--panel),var(--panel) 10px,#F3F4F6 10px,#F3F4F6 20px);display:flex;align-items:center;justify-content:center;color:var(--plateedge);font-family:'IBM Plex Mono';font-size:10px;letter-spacing:2px;text-transform:uppercase;margin:0 0 18px;text-align:center;padding:8px}
+.ad.banner{min-height:90px}
+.ad.infeed{min-height:110px;margin:0 0 16px}
+.ad.footer-ad{min-height:100px;margin:18px 0 0}
+@media(max-width:520px){.card{padding:14px}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<input type="file" id="importFile" accept="application/json" style="display:none">
+<script>
+/* ============ ILUSTRAȚII BLUEPRINT ============ */
+function bpSvg(body){
+ const stroke="var(--inksoft)";const acc="var(--red)";const thin="var(--plateedge)";
+ const wheels=`<circle cx="105" cy="108" r="21" fill="none" stroke="${stroke}" stroke-width="2.5"/><circle cx="105" cy="108" r="9" fill="none" stroke="${thin}" stroke-width="1.5"/><circle cx="315" cy="108" r="21" fill="none" stroke="${stroke}" stroke-width="2.5"/><circle cx="315" cy="108" r="9" fill="none" stroke="${thin}" stroke-width="1.5"/>`;
+ const ground=`<line x1="20" y1="130" x2="400" y2="130" stroke="${thin}" stroke-width="1" stroke-dasharray="4 5"/>`;
+ const grid=`<line x1="30" y1="20" x2="30" y2="126" stroke="${thin}" stroke-width=".7" stroke-dasharray="2 4"/><line x1="390" y1="20" x2="390" y2="126" stroke="${thin}" stroke-width=".7" stroke-dasharray="2 4"/>`;
+ let carPath="",glass="",detail="";
+ if(body==="sedan"){
+  carPath="M40,104 L46,86 Q50,78 66,76 L118,70 Q168,52 218,52 L280,54 Q322,56 348,72 L372,80 Q382,84 382,94 L382,102 Q382,108 372,108 L344,108 M286,108 L134,108 M76,108 L50,108 Q40,108 40,104 Z";
+  glass=`<path d="M130,70 Q170,56 216,56 L268,57 Q300,59 322,70 L262,70 Z" fill="none" stroke="${stroke}" stroke-width="1.6"/><line x1="196" y1="55" x2="196" y2="70" stroke="${stroke}" stroke-width="1.6"/>`;
+  detail=`<line x1="46" y1="90" x2="378" y2="90" stroke="${acc}" stroke-width="1.4"/><rect x="42" y="82" width="10" height="5" fill="none" stroke="${stroke}" stroke-width="1.3"/>`;
+ } else if(body==="coupe"){
+  carPath="M42,104 L48,88 Q52,80 70,78 L128,72 Q186,48 238,50 L286,54 Q326,58 350,74 L372,82 Q382,86 382,95 L382,102 Q382,108 372,108 L344,108 M286,108 L134,108 M76,108 L52,108 Q42,108 42,104 Z";
+  glass=`<path d="M142,71 Q192,52 236,53 L280,57 Q308,61 326,72 L142,72 Z" fill="none" stroke="${stroke}" stroke-width="1.6"/><line x1="228" y1="53" x2="230" y2="72" stroke="${stroke}" stroke-width="1.6"/>`;
+  detail=`<line x1="48" y1="92" x2="378" y2="92" stroke="${acc}" stroke-width="1.4"/><rect x="44" y="84" width="10" height="5" fill="none" stroke="${stroke}" stroke-width="1.3"/>`;
+ } else {
+  carPath="M44,104 L50,88 Q54,80 72,78 L150,72 L206,60 Q214,58 224,60 L262,66 L300,70 Q340,74 358,80 L374,86 Q382,90 382,97 L382,102 Q382,108 372,108 L344,108 M286,108 L134,108 M78,108 L54,108 Q44,108 44,104 Z";
+  glass=`<path d="M160,72 L206,62 L212,72 Z" fill="none" stroke="${stroke}" stroke-width="1.6"/><path d="M226,62 Q238,54 254,56 L250,66" fill="none" stroke="${thin}" stroke-width="1.3" stroke-dasharray="3 3"/>`;
+  detail=`<line x1="50" y1="92" x2="378" y2="92" stroke="${acc}" stroke-width="1.4"/><rect x="46" y="84" width="10" height="5" fill="none" stroke="${stroke}" stroke-width="1.3"/>`;
+ }
+ return `<svg viewBox="0 0 420 140" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustrație tehnică">${grid}${ground}<path d="${carPath}" fill="none" stroke="${stroke}" stroke-width="2.5" stroke-linejoin="round"/>${glass}${wheels}${detail}</svg>`;
+}
+
+/* ============ DATE ============ */
+const MODELS=[
+ {code:"W124",name:"Mercedes-Benz W124 / C124 Coupé",years:"1984–1997",yearFrom:1984,yearTo:1997,price:"6.000 – 20.000 €",band:[9000,18000],query:"W124",body:"coupe",gal:"Mercedes C124 300CE coupe",prod:"~2,7 mil. total · Coupé C124: doar ~141.000",
+  thesis:"Ultimul Mercedes construit „fără buget” — reper absolut de fiabilitate. Sedanurile sunt numeroase, dar exemplarele originale, neruginite, cu istoric complet au devenit rare. Coupé-ul C124 (300CE / E320) e alegerea de investiție: producție mică, design Bruno Sacco, cel mai căutat de colecționari.",
+  check:["Rugină: pragurile, punctele de cric, aripile spate, capacul portbagajului","Cablajul motor M104 (1992–1995): izolație biodegradabilă — verifică dacă a fost înlocuit","Cutia automată: schimburi line, ulei curat","Interior original, netăiat, fără găuri de accesorii"],
+  tags:["Fiabilitate ★★★","Comunitate uriașă","Coupé = raritate","Potențial ridicat"],verdict:"PRIORITATE MAXIMĂ — coupé C124, sub 150.000 km"},
+ {code:"R129",name:"Mercedes-Benz SL (R129)",years:"1989–2001",yearFrom:1989,yearTo:2001,price:"12.000 – 20.000 €",band:[13000,20000],query:"SL R129",body:"roadster",gal:"Mercedes SL R129 roadster",prod:"~204.000 buc. în 12 ani — puțin pentru un SL",
+  thesis:"Roadsterul „over-engineered” al anilor '90, nedumeritor de ieftin pentru ce oferă. Decapotabilele se apreciază istoric mai bine decât coupé-urile, iar R129 e ultimul SL din epoca de aur a calității Mercedes. SL320 (6 cil.) și SL500 (V8) sunt în buget la exemplare bune.",
+  check:["Softtop-ul și mecanismul hidraulic al plafonului — reparațiile sunt scumpe","Rugină: arcade roți, sub bandourile laterale","Istoric service complet — motoarele M104/M119 sunt eterne DOAR cu întreținere","Hardtop-ul original inclus = plus de valoare"],
+  tags:["Decapotabilă","V8 accesibil","Sub radar","Creștere lentă și sigură"],verdict:"CUMPĂRĂ ACUM — fereastra sub 20k se închide pentru SL500"},
+ {code:"W201",name:"Mercedes-Benz 190E (W201)",years:"1982–1993",yearFrom:1982,yearTo:1993,price:"5.000 – 18.000 €",band:[8000,16000],query:"190E W201",body:"sedan",gal:"Mercedes 190E W201",prod:"~1,88 mil. · 2.6 și Sportline: fracțiune mică",
+  thesis:"„Baby Benz”-ul care a definit calitatea compactă. Versiunile 2.6 (6 cilindri) și pachetul Sportline sunt cele colecționabile — restul rămân mașini bune, dar comune. Fratele 2.5-16 Evo a explodat deja ca preț; efectul se scurge în jos spre 2.6 și Sportline.",
+  check:["Caută DOAR 2.6 sau Sportline, ideal cu manuală","Rugină: aripi față, praguri sub bandouri","Kilometraj real documentat — multe au fost date înapoi","Originalitate 100%: fără eleroane, jante sau volane aftermarket"],
+  tags:["Icon anii '80","Efect 2.5-16","Piese ieftine","Comunitate mare"],verdict:"SELECTIV — doar 2.6 / Sportline impecabile"},
+ {code:"W126",name:"Mercedes-Benz S-Klasse (W126)",years:"1979–1991",yearFrom:1979,yearTo:1991,price:"8.000 – 20.000 €",band:[10000,18000],query:"W126",body:"sedan",gal:"Mercedes W126 500SE",prod:"~818.000 sedan · Coupé SEC: ~74.000",
+  thesis:"Cel mai reușit S-Klasse din istorie, 12 ani în producție fără rival. Sedanurile V8 (420SE/500SE) sunt în buget și cresc constant; coupé-ul SEC e ținta ideală, dar exemplarele bune depășesc deja 20k — dacă prinzi unul corect în buget, e lovitura de grație.",
+  check:["Lanț de distribuție simplu vs dublu la V8-urile timpurii — verifică istoricul","Rugină: parbriz, praguri, sub bateria din portbagaj","Suspensie hidraulică spate (unde există) — funcțională","Istoric de garaj: mașinile astea sufereau iarna"],
+  tags:["V8 de colecție","Statut blue-chip","SEC = jackpot","Eleganță Sacco"],verdict:"OPORTUNIST — sedan V8 excelent sau SEC sub-evaluat"},
+ {code:"W123",name:"Mercedes-Benz W123",years:"1976–1985",yearFrom:1976,yearTo:1985,price:"6.000 – 18.000 €",band:[8000,16000],query:"W123",body:"coupe",gal:"Mercedes W123 280CE coupe",prod:"~2,7 mil. · Coupé CE: ~100.000",
+  thesis:"Indestructibilul absolut — legenda fiabilității Mercedes. Statut de clasic deja consolidat (40+ ani), eligibil pentru înmatriculare de vehicul istoric în România. Coupé-ul 230CE/280CE e varianta de investiție; sedanul e varianta de siguranță.",
+  check:["Rugină — inamicul #1: aripi, praguri, podea, suporturi de cric","Motoarele merg veșnic; caroseria decide prețul","Documentație istorică: carnet service, facturi vechi","Culori de epocă originale (nu revopsit în negru modern)"],
+  tags:["Fiabilitate legendară","Vehicul istoric RO","Comunitate globală","Risc minim"],verdict:"SIGURANȚĂ — coupé CE original, cel mai bun exemplar disponibil"},
+ {code:"W140",name:"Mercedes-Benz S-Klasse (W140)",years:"1991–1998",yearFrom:1991,yearTo:1998,price:"5.000 – 15.000 €",band:[6000,13000],query:"W140",body:"sedan",gal:"Mercedes W140 S500",prod:"~406.000 · Coupé C140: ~26.000",
+  thesis:"Ultimul Mercedes proiectat fără compromisuri de cost. Azi e cel mai ieftin bilet spre statutul de colecție viitor: generația care l-a admirat în anii '90 intră acum la putere de cumpărare. Coupé-ul C140 (doar ~26.000 buc.) e raritatea reală din buget.",
+  check:["Cablaj motor biodegradabil (1993–1995) — înlocuit sau nu","Sisteme electrice și pneumatice: totul trebuie să funcționeze","Evită exemplarele „de fițe” modificate — doar 100% original","Costuri de întreținere mari: cumpără cel mai bun, nu cel mai ieftin"],
+  tags:["Pariu pe viitor","C140 = producție mică","Încă ieftin","Trend youngtimer"],verdict:"SPECULATIV — C140 coupé original sau S500 impecabil"},
+];
+
+const GROUPS=[
+ {id:"major",label:"Piețe majore (volum mare, anunțuri noi zilnic)",note:null,items:[
+  {name:"mobile.de",country:"DE",neg:"DA",note:"Cea mai mare piață din Europa",build:m=>`https://suchen.mobile.de/fahrzeuge/search.html?isSearchRequest=true&makeModelVariant1.makeId=17200&makeModelVariant1.modelDescription=${encodeURIComponent(m.query)}&maxPrice=20000&minFirstRegistrationDate=${m.yearFrom}-01-01&maxFirstRegistrationDate=${m.yearTo}-12-31`},
+  {name:"AutoScout24",country:"EU",neg:"DA",note:"Filtre bune, anunțuri din toată UE",build:m=>`https://www.autoscout24.ro/lst/mercedes-benz?fregfrom=${m.yearFrom}&fregto=${m.yearTo}&priceto=20000&sort=age&desc=0`},
+  {name:"Kleinanzeigen",country:"DE",neg:"DA",note:"Privați germani — prețuri directe",build:m=>`https://www.kleinanzeigen.de/s-autos/mercedes-${encodeURIComponent(m.query.toLowerCase().replace(/\s+/g,"-"))}/k0c216`},
+  {name:"Autovit.ro",country:"RO",neg:"DA",note:"Local — fără costuri de import",build:m=>`https://www.autovit.ro/autoturisme/mercedes-benz/de-la-${m.yearFrom}?search%5Bfilter_float_price%3Ato%5D=20000`},
+ ]},
+ {id:"med",label:"Mediterana — climat blând, fără sare pe drumuri",
+  note:"Caroserii mult mai sănătoase (fără rugină de sare), dar verifică: interioare arse de soare, chedere/cauciucuri degradate, rugină salină la mașinile de coastă. Ideal: garaj, interiorul țării.",items:[
+  {name:"Leboncoin",country:"FR",neg:"DA",note:"Sudul Franței = zona de aur",build:m=>`https://www.leboncoin.fr/recherche?category=2&text=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"AutoScout24.it",country:"IT",neg:"DA",note:"Nordul Italiei, mașini de garaj",build:m=>`https://www.autoscout24.it/lst/mercedes-benz?fregfrom=${m.yearFrom}&fregto=${m.yearTo}&priceto=20000&sort=age&desc=0`},
+  {name:"Subito.it",country:"IT",neg:"DA",note:"Privați italieni, prețuri mici",build:m=>`https://www.subito.it/annunci-italia/vendita/auto/?q=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"Coches.net",country:"ES",neg:"DA",note:"Spania interioară = cel mai uscat climat",build:m=>`https://www.coches.net/segunda-mano/?Text=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"Standvirtual",country:"PT",neg:"DA",note:"Portugalia — piață mică, subevaluată",build:m=>`https://www.standvirtual.com/carros/mercedes-benz?search%5Bfilter_float_price%3Ato%5D=20000`},
+  {name:"Car.gr",country:"GR",neg:"DA",note:"Grecia — atenție la mașinile de coastă",build:m=>`https://www.car.gr/classifieds/cars/?q=${encodeURIComponent("mercedes "+m.query)}`},
+ ]},
+ {id:"collect",label:"Colecționari & licitații (calitate ridicată, documentație)",
+  note:"La licitații prețul NU se negociază — îl stabilesc bid-urile; avantajul e că vezi prețul REAL de piață. La dealerii de clasice marja de negociere e de obicei 5–10%.",items:[
+  {name:"Classic Trader",country:"EU",neg:"PARTIAL",note:"Dealeri de clasice verificați",build:m=>`https://www.classic-trader.com/uk/cars/search?keyword=${encodeURIComponent("Mercedes "+m.query)}&price_to=20000`},
+  {name:"Classic Driver",country:"EU",neg:"PARTIAL",note:"Segment premium, exemplare top",build:m=>`https://www.classicdriver.com/en/cars?query=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"Car & Classic",country:"UK/EU",neg:"DA",note:"Anunțuri + licitații, ofertă mare",build:m=>`https://www.carandclassic.com/search?q=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"Collecting Cars",country:"UK/EU",neg:"NU",note:"Licitații — preț real de piață",build:m=>`https://collectingcars.com/search?query=${encodeURIComponent("Mercedes "+m.query)}`},
+  {name:"Catawiki",country:"NL/EU",neg:"NU",note:"Licitații săptămânale, ofertă variată",build:m=>`https://www.catawiki.com/en/s?q=${encodeURIComponent("mercedes "+m.query)}`},
+  {name:"Classic.com",country:"GLOBAL",neg:"REF",note:"REFERINȚĂ DE PREȚ: istoricul vânzărilor",build:m=>`https://www.classic.com/search/?q=${encodeURIComponent("mercedes "+m.query)}`},
+ ]},
+];
+
+const CRITERIA=[
+ {id:"service",label:"Istoric de service complet (carnet + facturi)",w:25},
+ {id:"original",label:"100% piese originale / nemodificată",w:25},
+ {id:"tehnic",label:"Stare tehnică foarte bună (fără rugină structurală)",w:20},
+ {id:"km",label:"Kilometraj real, documentat (ideal 80–150.000 km)",w:10},
+ {id:"owners",label:"Puțini proprietari (1–3) / proveniență clară",w:10},
+ {id:"spec",label:"Specificație dezirabilă (coupé, 6cil/V8, culoare de epocă)",w:10},
+];
+const STATUSES=["Nou","De urmărit","Contactat","Inspecție programată","Ofertă făcută","Respins","Cumpărat ✓"];
+const RO_EXTRA=1500;
+const NEG_LABEL={DA:["NEGOCIABIL","da"],PARTIAL:["NEG. PARȚIAL","part"],NU:["LICITAȚIE — FIX","nu"],REF:["DATE PREȚ","ref"]};
+/* Grade de stare (à la ghidurile de evaluare) — multiplicator aplicat benzii de preț */
+const CONDS=[
+ {id:"1",label:"#1 Concurs — impecabilă, ca nouă",mult:1.30},
+ {id:"2",label:"#2 Excelentă — foarte bună, mici semne",mult:1.00},
+ {id:"3",label:"#3 Bună — funcțională, uzură vizibilă",mult:0.70},
+ {id:"4",label:"#4 Proiect — necesită lucrări",mult:0.45},
+];
+const condOf=id=>CONDS.find(c=>c.id===String(id))||CONDS[1];
+
+/* Costuri estimative de aducere în RO pe țară (transport platformă, €) */
+const TRANSPORT={RO:0,DE:600,AT:500,HU:300,FR:800,IT:800,NL:700,BE:700,ES:1100,PT:1200,GR:1100,UK:1300,CH:700,PL:400,CZ:400};
+const trCost=c=>TRANSPORT[String(c||"").toUpperCase()]??800;
+const REG_COST=900; /* înmatriculare + traduceri + service intrare */
+const offerTotal=o=>{const p=parsePrice(o.price);return p==null?null:p+trCost(o.country)+REG_COST;};
+/* Scor calitate-preț 0–100: preț vs bandă(stare) 40 · dotări 15 · istoric 15 · negociere 8 · aducere 12 · km 10 */
+function offerScore(o){
+ const m=modelOf(o.model);const p=parsePrice(o.price);if(!m||p==null)return 0;
+ const mult=condOf(o.cond||"2").mult;const lo=m.band[0]*mult,hi=m.band[1]*mult;
+ let s=0;
+ s+= p<=lo*0.85?40 : p<lo?32 : p<=hi?22 : 8;
+ const opt=String(o.options||"").toLowerCase();
+ s+= opt==="full"?15 : opt==="partial"?8 : 3;
+ s+= o.history?15:0;
+ s+= o.neg==="DA"?8 : o.neg==="PARTIAL"?4 : 0;
+ const t=trCost(o.country);
+ s+= t===0?12 : t<=600?9 : t<=900?6 : 3;
+ const km=parsePrice(o.km);
+ s+= km==null?4 : (km>=80000&&km<=150000)?10 : km<80000?7 : 4;
+ return Math.min(100,s);
+}
+const EXC_THRESHOLD=85;
+
+function adSlot(kind,label){
+ return `<div class="ad ${kind}" role="complementary" aria-label="Publicitate">— spațiu publicitar · ${label} —</div>`;
+}
+
+/* ============ STARE + STORAGE ============ */
+const KEY="mbhunter-local-v1";
+let S={tab:"modele",huntModel:"W124",expanded:null,listings:[],lastHunt:null,saveErr:false,bargain:null,menu:false,
+ cmp:[],showCmp:false,q:"",fModel:"TOATE",fStatus:"TOATE",sort:"recent",onbOff:false,
+ agent:{generated:null,offers:[]},agentTxt:"",agentMsg:null,agentModel:"TOATE",agentPop:0,
+ form:{model:"W124",title:"",price:"",url:"",year:"",km:"",note:"",cond:"2"}};
+function load(){try{const r=localStorage.getItem(KEY);if(r){const d=JSON.parse(r);S.listings=d.listings||[];S.lastHunt=d.lastHunt||null;S.onbOff=!!d.onbOff;if(d.agent&&Array.isArray(d.agent.offers))S.agent=d.agent;}}catch(e){}}
+function save(){try{localStorage.setItem(KEY,JSON.stringify({listings:S.listings,lastHunt:S.lastHunt,onbOff:S.onbOff,agent:S.agent}));S.saveErr=false;}catch(e){S.saveErr=true;}}
+const today=()=>new Date().toLocaleDateString("ro-RO",{day:"2-digit",month:"2-digit",year:"numeric"});
+const esc=s=>String(s??"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+const modelOf=c=>MODELS.find(m=>m.code===c);
+const parsePrice=v=>{const n=parseInt(String(v??"").replace(/[^\d]/g,""),10);return isNaN(n)?null:n;};
+function verdictOf(m,p,cond){if(!m||p==null)return null;
+ const mult=condOf(cond||"2").mult;
+ const lo=Math.round(m.band[0]*mult),hi=Math.round(m.band[1]*mult);
+ if(p<lo*0.85)return{key:"CHILIPIR",label:"⚠ CHILIPIR POTENȚIAL",color:"var(--red)",desc:`Cu ${Math.round((1-p/lo)*100)}% sub pragul pieței pentru starea aleasă`,lo,hi};
+ if(p<lo)return{key:"SUB",label:"SUB PIAȚĂ",color:"var(--green)",desc:"Preț atractiv — verifică de ce",lo,hi};
+ if(p<=hi)return{key:"LA",label:"LA PIAȚĂ",color:"var(--amber)",desc:"Preț corect pentru starea aleasă",lo,hi};
+ return{key:"PESTE",label:"PESTE PIAȚĂ",color:"var(--inksoft)",desc:"Justificat doar de rulaj mic / dotări rare",lo,hi};}
+const score=l=>CRITERIA.reduce((s,c)=>s+(l.crit&&l.crit[c.id]?c.w:0),0);
+const scoreColor=s=>s>=80?"var(--green)":s>=50?"var(--amber)":"var(--inksoft)";
+const fmt=n=>n.toLocaleString("ro-RO");
+const galUrl=m=>`https://www.google.com/search?tbm=isch&q=${encodeURIComponent(m.gal)}`;
+const daysOf=l=>{const t=parseInt(l.id,10);if(isNaN(t))return 0;return Math.max(0,Math.floor((Date.now()-t)/86400000));};
+const curPrice=l=>l.priceHist&&l.priceHist.length?l.priceHist[l.priceHist.length-1].p:parsePrice(l.price);
+const firstPrice=l=>l.priceHist&&l.priceHist.length?l.priceHist[0].p:parsePrice(l.price);
+
+/* ============ ACȚIUNI ============ */
+window.A={
+ tab(t){S.tab=t;S.menu=false;render();window.scrollTo({top:0});},
+ menu(){S.menu=!S.menu;render();},
+ hunt(c){S.huntModel=c;render();},
+ goHunt(c){S.huntModel=c;S.tab="vanatoare";S.menu=false;render();window.scrollTo({top:0});},
+ exp(c){S.expanded=S.expanded===c?null:c;render();},
+ mark(){S.lastHunt=today();save();render();},
+ onb(){S.onbOff=true;save();render();},
+ f(field,el){S.form[field]=el.value;if(field==="price"||field==="model"||field==="cond")render(true);},
+ flt(field,el){S[field]=el.value;render(field==="q");},
+ add(){if(!S.form.title.trim())return;
+  const p=parsePrice(S.form.price);
+  const item={id:Date.now().toString(),...S.form,status:"Nou",crit:{},added:today(),
+   priceHist:p!=null?[{p,d:today()}]:[]};
+  S.listings.unshift(item);save();
+  const pv=verdictOf(modelOf(S.form.model),p,S.form.cond);
+  if(pv&&pv.key==="CHILIPIR")S.bargain={title:S.form.title,model:S.form.model,price:S.form.price,desc:pv.desc};
+  S.form={model:S.form.model,title:"",price:"",url:"",year:"",km:"",note:"",cond:"2"};render();},
+ upPrice(id){const l=S.listings.find(x=>x.id===id);if(!l)return;
+  const v=window.prompt("Prețul actual din anunț (€):",curPrice(l)??"");
+  if(v==null)return;const p=parsePrice(v);if(p==null)return;
+  l.priceHist=l.priceHist||[];l.priceHist.push({p,d:today()});l.price=String(p);save();render();},
+ cond(id,el){const l=S.listings.find(x=>x.id===id);if(!l)return;l.cond=el.value;save();render();},
+ crit(id,cid,el){const l=S.listings.find(x=>x.id===id);if(!l)return;l.crit=l.crit||{};l.crit[cid]=el.checked;save();render();},
+ st(id,el){const l=S.listings.find(x=>x.id===id);if(!l)return;l.status=el.value;save();render();},
+ del(id){S.listings=S.listings.filter(x=>x.id!==id);S.cmp=S.cmp.filter(x=>x!==id);save();render();},
+ closeB(){S.bargain=null;render();},
+ cmpT(id,el){if(el.checked){if(S.cmp.length>=3){el.checked=false;return;}S.cmp.push(id);}else{S.cmp=S.cmp.filter(x=>x!==id);}render();},
+ cmpOpen(){S.showCmp=true;render();},
+ cmpClose(){S.showCmp=false;render();},
+ cmpClear(){S.cmp=[];S.showCmp=false;render();},
+ atxt(el){S.agentTxt=el.value;},
+ agentFlt(el){S.agentModel=el.value;render();},
+ importAgent(){
+  S.agentMsg=null;
+  try{
+   const mjson=String(S.agentTxt||"").match(/\{[\s\S]*\}/);
+   if(!mjson)throw new Error("nojson");
+   const d=JSON.parse(mjson[0]);
+   if(!d||!Array.isArray(d.offers)||!d.offers.length)throw new Error("format");
+   const valid=d.offers.filter(o=>o&&o.title&&modelOf(o.model)&&parsePrice(o.price)!=null);
+   if(!valid.length)throw new Error("format");
+   S.agent={generated:d.generated||today(),offers:valid};
+   S.agentTxt="";save();
+   const exc=valid.filter(o=>offerScore(o)>=EXC_THRESHOLD).length;
+   S.agentMsg={ok:true,t:`Raport importat: ${valid.length} oferte (${exc} excelente).`};
+   S.agentPop=exc;
+  }catch(e){
+   S.agentMsg={ok:false,t:"Nu am găsit un bloc JSON valid. Lipește raportul agentului exact cum l-a generat (conține {\"offers\":[...]})."};
+  }
+  render();
+ },
+ clearAgent(){if(!window.confirm("Ștergi raportul curent al agentului?"))return;S.agent={generated:null,offers:[]};save();render();},
+ closeAP(){S.agentPop=0;render();},
+ addFromOffer(idx){
+  const o=S.agent.offers[idx];if(!o)return;
+  if(o.url&&S.listings.some(l=>l.url===o.url))return;
+  const p=parsePrice(o.price);
+  S.listings.unshift({id:Date.now().toString(),model:o.model,title:o.title,price:String(p??""),url:o.url||"",
+   year:String(o.year||""),km:String(o.km||""),note:(o.note?o.note+" · ":"")+"din raportul agentului ("+(S.agent.generated||"")+")",
+   cond:String(o.cond||"2"),status:"De urmărit",crit:{},added:today(),priceHist:p!=null?[{p,d:today()}]:[]});
+  save();render();
+ },
+ exportData(){
+  const blob=new Blob([JSON.stringify({listings:S.listings,lastHunt:S.lastHunt,exported:today(),app:"VanatorulMB"},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);
+  a.download="vanatorul-mb-backup.json";a.click();URL.revokeObjectURL(a.href);},
+ importData(){document.getElementById("importFile").click();},
+};
+document.getElementById("importFile").addEventListener("change",function(ev){
+ const f=ev.target.files[0];if(!f)return;
+ const r=new FileReader();
+ r.onload=()=>{try{
+   const d=JSON.parse(r.result);
+   if(!d||!Array.isArray(d.listings))throw new Error("format");
+   if(!window.confirm(`Import ${d.listings.length} anunțuri din backup? Lista actuală (${S.listings.length}) va fi înlocuită.`))return;
+   S.listings=d.listings;save();render();
+  }catch(e){window.alert("Fișier invalid — folosește un backup exportat din aplicație.");}};
+ r.readAsText(f);ev.target.value="";
+});
+
+/* ============ RANDARE ============ */
+const TABS=[["modele","Modele țintă"],["vanatoare","Vânătoare zilnică"],["agent","⭐ Top oferte (Agent)"],["lista","Lista mea"],["ghid","Ghid & RO"]];
+function render(keepFocus){
+ const active=keepFocus?document.activeElement:null;
+ const activeId=active?active.getAttribute("data-f"):null;
+ const selStart=active&&active.selectionStart;
+ const m=modelOf(S.huntModel)||MODELS[0];
+ const bargainCount=S.listings.filter(l=>{const pv=verdictOf(modelOf(l.model),curPrice(l),l.cond);return pv&&pv.key==="CHILIPIR";}).length;
+ const hunted=S.lastHunt===today();
+ const candidates=S.listings.filter(l=>score(l)>=80).length;
+
+ let html=`
+ <header><div class="wrap"><div class="hdr-top">
+  <div style="display:flex;align-items:center;gap:14px">
+   <button class="burger ${S.menu?"open":""}" onclick="A.menu()" aria-label="Meniu"><span></span><span></span><span></span></button>
+   <div>
+    <div class="eyebrow mono">INVESTIȚII AUTO CLASICE</div>
+    <h1>VÂNĂTORUL <span class="red">MB</span></h1>
+   </div>
+  </div>
+  <div class="hdr-badges">
+   <div class="status mono ${hunted?"done":"todo"}">${hunted?"✓ Vânătoarea de azi: FĂCUTĂ":"● Vânătoarea de azi: NEFĂCUTĂ"}</div>
+   ${bargainCount>0?`<div class="bargain-count mono">⚠ ${bargainCount} chilipir${bargainCount>1?"uri":""}</div>`:""}
+  </div>
+ </div></div></header>`;
+
+ /* DRAWER */
+ if(S.menu){
+  html+=`<div class="drawer-veil" onclick="A.menu()"></div>
+  <aside class="drawer">
+   <div class="brand"><h2>VÂNĂTORUL <span class="red">MB</span></h2><div class="mono">MENIU PRINCIPAL</div></div>
+   <nav>
+    ${TABS.map(([id,lbl])=>`<button class="${S.tab===id?"on":""}" onclick="A.tab('${id}')">${lbl}
+      ${id==="lista"&&S.listings.length?`<span class="cnt">${S.listings.length}</span>`:""}</button>`).join("")}
+   </nav>
+   <div class="dactions">
+    <button onclick="A.exportData()">⬇ Exportă datele (backup)</button>
+    <button onclick="A.importData()">⬆ Importă backup</button>
+   </div>
+   <div class="dstats">
+    <div class="row2"><span>Anunțuri urmărite</span><b>${S.listings.length}</b></div>
+    <div class="row2"><span>Candidați (scor ≥ 80)</span><b>${candidates}</b></div>
+    <div class="row2"><span>Chilipiruri active</span><b>${bargainCount}</b></div>
+    <div class="row2"><span>Vânătoarea de azi</span><b>${hunted?"✓":"—"}</b></div>
+   </div>
+  </aside>`;
+ }
+
+ html+=`<main><div class="wrap">
+ ${adSlot("banner","banner principal 728×90 / responsive")}
+ ${S.saveErr?`<div class="savefail">Salvarea locală a eșuat (browser în mod privat?). Datele se pot pierde la închidere.</div>`:""}`;
+
+ /* Onboarding */
+ if(!S.onbOff&&S.listings.length===0){
+  html+=`<div class="onb"><b>Bine ai venit, vânătorule.</b> Traseul: ① alege modelul care-ți place din <b>Modele țintă</b> (apasă „Galerie foto”) → ② deschide căutările din <b>Vânătoare zilnică</b> → ③ salvează candidații în <b>Lista mea</b> — evaluatorul te anunță automat când prinzi un chilipir. <button class="btn" style="margin-top:8px" onclick="A.onb()">Am înțeles, ascunde</button></div>`;
+ }
+
+ if(S.tab==="modele"){
+  html+=`<div class="fade"><p style="font-size:14px;line-height:1.55;color:var(--inksoft);margin-bottom:18px;max-width:760px">
+   Șase ținte selectate pe criterii de investiție. Regula de aur: <b style="color:var(--ink)">cel mai bun exemplar dintr-un model accesibil</b>.</p>`;
+  MODELS.forEach((x,i)=>{
+   html+=`<article class="card">
+    <div class="row">
+     <div style="display:flex;gap:12px;align-items:center">
+      <span class="plate">${x.code}</span>
+      <div><div class="mname">${x.name}</div><div class="meta mono">${x.years} · ${x.prod}</div></div>
+     </div>
+     <div><div class="price mono">${x.price}</div><div class="band mono">preț corect (#2): ${fmt(x.band[0])}–${fmt(x.band[1])} €</div></div>
+    </div>
+    <div class="blueprint">
+     <span class="bp-label">Fig. ${String(i+1).padStart(2,"0")} · ${x.body==="coupe"?"COUPÉ":x.body==="roadster"?"ROADSTER":"SEDAN"} · profil</span>
+     ${bpSvg(x.body)}
+     <a class="gal" href="${galUrl(x)}" target="_blank" rel="noopener">📷 Galerie foto →</a>
+    </div>
+    <p class="thesis">${x.thesis}</p>
+    <div class="tags">${x.tags.map(t=>`<span class="tag">${t}</span>`).join("")}</div>
+    ${S.expanded===x.code?`<div class="fisa fade">
+      <div class="seclabel">▸ Ce verifici la inspecție</div>
+      <ul>${x.check.map((c,j)=>`<li><span class="num">${String(j+1).padStart(2,"0")}</span><span>${c}</span></li>`).join("")}</ul>
+      <div class="verdict"><b>VERDICT:</b> ${x.verdict}</div></div>`:""}
+    <div class="btnrow">
+     <button class="btn" onclick="A.exp('${x.code}')">${S.expanded===x.code?"− Închide fișa":"+ Fișa tehnică"}</button>
+     <button class="btn primary" onclick="A.goHunt('${x.code}')">Caută acum →</button>
+    </div>
+   </article>
+   ${i===2?adSlot("infeed","in-feed între modele 336×280 / responsive"):""}`;
+  });
+  html+=`</div>`;
+ }
+
+ if(S.tab==="vanatoare"){
+  html+=`<div class="fade">
+   <div class="row" style="margin-bottom:16px">
+    <div><div class="seclabel">▸ Rutina zilnică — 15 minute, toată Europa</div>
+     <p style="font-size:14px;color:var(--inksoft);max-width:640px">Alege modelul, parcurge grupele de platforme, sortează după <em>cele mai noi anunțuri</em> și salvează candidații.</p></div>
+    <button class="btn ${hunted?"":"ok"}" ${hunted?"disabled":""} onclick="A.mark()">${hunted?"✓ Bifat azi":"Marchează vânătoarea făcută"}</button>
+   </div>
+   <div class="modelbtns">${MODELS.map(x=>`<button class="${S.huntModel===x.code?"on":""}" onclick="A.hunt('${x.code}')">${x.code}</button>`).join("")}</div>
+   <div class="card flat" style="padding:14px">
+    <span class="plate sm">${m.code}</span> <b style="margin-left:8px">${m.name}</b>
+    <div class="meta mono" style="margin-top:6px">Filtru: ${m.yearFrom}–${m.yearTo} · max 20.000 € · preț corect (#2): ${fmt(m.band[0])}–${fmt(m.band[1])} €</div>
+   </div>`;
+  GROUPS.forEach((g,gi)=>{
+   html+=`<div style="margin-bottom:20px"><div class="seclabel">▸ ${g.label}</div>
+    ${g.note?`<div class="gnote">${g.note}</div>`:""}
+    <div class="grid3">${g.items.map(p=>{const nl=NEG_LABEL[p.neg];return`
+     <a class="plat" href="${p.build(m)}" target="_blank" rel="noopener">
+      <span class="co">${p.country}</span><span class="nm">${p.name}</span>
+      <div class="nt">${p.note}</div>
+      <div class="foot"><span class="neg ${nl[1]}">${nl[0]}</span><span class="go">Deschide →</span></div>
+     </a>`;}).join("")}</div></div>
+    ${gi===0?adSlot("infeed","in-feed între grupe de platforme"):""}`;
+  });
+  html+=`<div class="card flat" style="border-style:dashed">
+   <div class="seclabel">▸ Semnale de anunț bun (salvează imediat)</div>
+   <ul class="ghid">
+    <li>· „Scheckheftgepflegt” (DE) = carnet complet la reprezentanță · „Tagliandata” (IT) · „Libro de revisiones” (ES)</li>
+    <li>· „Erstbesitz / 1ère main / unico proprietario” = primul proprietar — aur curat</li>
+    <li>· „Garagenwagen / coche de garaje” = ținută în garaj (esențial la mașinile din sud)</li>
+    <li>· Poze cu carnetul, facturile, podeaua și pragurile — vânzător serios</li>
+    <li>· Preț ușor peste medie dar stare excepțională &gt; preț mic și stare medie</li>
+   </ul></div></div>`;
+ }
+
+ if(S.tab==="lista"){
+  const fm=modelOf(S.form.model);const fpv=verdictOf(fm,parsePrice(S.form.price),S.form.cond);
+  html+=`<div class="fade"><div class="seclabel">▸ Adaugă un anunț găsit</div>
+   <div class="card flat"><div class="formgrid">
+    <select data-f="model" onchange="A.f('model',this)">${MODELS.map(x=>`<option value="${x.code}" ${S.form.model===x.code?"selected":""}>${x.code} — ${x.name}</option>`).join("")}</select>
+    <select data-f="cond" onchange="A.f('cond',this)">${CONDS.map(c=>`<option value="${c.id}" ${S.form.cond===c.id?"selected":""}>Stare ${c.label}</option>`).join("")}</select>
+    <input data-f="title" placeholder="Titlu (ex: 300CE-24, Almandinrot, 138.000 km)" value="${esc(S.form.title)}" oninput="A.f('title',this)">
+    <div><input data-f="price" placeholder="Preț (€)" inputmode="numeric" value="${esc(S.form.price)}" oninput="A.f('price',this)">
+     ${fpv?`<div class="pv" style="color:${fpv.color}">${fpv.label} — ${fpv.desc} <span style="color:var(--inksoft)">(bandă: ${fmt(fpv.lo)}–${fmt(fpv.hi)} €)</span></div>`:""}</div>
+    <input data-f="url" placeholder="Link anunț" value="${esc(S.form.url)}" oninput="A.f('url',this)">
+    <input data-f="year" placeholder="An fabricație" inputmode="numeric" value="${esc(S.form.year)}" oninput="A.f('year',this)">
+    <input data-f="km" placeholder="Kilometraj" inputmode="numeric" value="${esc(S.form.km)}" oninput="A.f('km',this)">
+    <input data-f="note" placeholder="Note (stare, vânzător, țară...)" value="${esc(S.form.note)}" oninput="A.f('note',this)" style="grid-column:1/-1">
+   </div>
+   <div class="btnrow"><button class="btn dark" onclick="A.add()">+ Adaugă în listă</button></div></div>`;
+
+  /* Toolbar filtre + sortare + căutare */
+  html+=`<div class="seclabel">▸ Anunțuri urmărite (${S.listings.length})</div>
+  <div class="toolbar">
+   <input data-f="q" placeholder="🔍 Caută în listă..." value="${esc(S.q)}" oninput="A.flt('q',this)">
+   <select onchange="A.flt('fModel',this)"><option value="TOATE" ${S.fModel==="TOATE"?"selected":""}>Toate modelele</option>${MODELS.map(x=>`<option ${S.fModel===x.code?"selected":""}>${x.code}</option>`).join("")}</select>
+   <select onchange="A.flt('fStatus',this)"><option value="TOATE" ${S.fStatus==="TOATE"?"selected":""}>Toate statusurile</option>${STATUSES.map(st=>`<option ${S.fStatus===st?"selected":""}>${st}</option>`).join("")}</select>
+   <select onchange="A.flt('sort',this)">
+    <option value="recent" ${S.sort==="recent"?"selected":""}>Cele mai recente</option>
+    <option value="score" ${S.sort==="score"?"selected":""}>Scor ↓</option>
+    <option value="pret" ${S.sort==="pret"?"selected":""}>Preț ↑</option>
+    <option value="zile" ${S.sort==="zile"?"selected":""}>Zile pe piață ↓</option>
+   </select>
+  </div>`;
+
+  let list=S.listings.filter(l=>
+   (S.fModel==="TOATE"||l.model===S.fModel)&&
+   (S.fStatus==="TOATE"||l.status===S.fStatus)&&
+   (!S.q||((l.title||"")+" "+(l.note||"")).toLowerCase().includes(S.q.toLowerCase())));
+  if(S.sort==="score")list=[...list].sort((a,b)=>score(b)-score(a));
+  else if(S.sort==="pret")list=[...list].sort((a,b)=>(curPrice(a)??1e9)-(curPrice(b)??1e9));
+  else if(S.sort==="zile")list=[...list].sort((a,b)=>daysOf(b)-daysOf(a));
+
+  if(!S.listings.length)html+=`<div class="empty">Lista e goală.<br>Fă vânătoarea zilnică și adaugă primul candidat.</div>`;
+  else if(!list.length)html+=`<div class="empty">Niciun rezultat pentru filtrele curente.</div>`;
+
+  list.forEach(l=>{
+   const s=score(l);const lm=modelOf(l.model);const pVal=curPrice(l);const pv=verdictOf(lm,pVal,l.cond);
+   const totalRO=pVal!=null?pVal+RO_EXTRA:null;const isChil=pv&&pv.key==="CHILIPIR";
+   const days=daysOf(l);const fp=firstPrice(l);
+   const dropPct=fp&&pVal&&pVal<fp?Math.round((1-pVal/fp)*100):0;
+   html+=`<article class="card" style="border-left-color:${isChil?"var(--red)":scoreColor(s)};${isChil?"border-color:var(--red);":""}">
+    <div class="row">
+     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+      <span class="plate sm">${l.model}</span><b style="font-size:14px">${esc(l.title)}</b>
+      ${l.url?`<a href="${esc(l.url)}" target="_blank" rel="noopener" class="mono" style="font-size:11px;color:var(--red)">anunț ↗</a>`:""}
+     </div>
+     <div class="score" style="color:${scoreColor(s)}">${s}<small>/100</small></div>
+    </div>
+    <div class="lrow" style="margin-top:6px">
+     ${pv?`<span class="chip ${isChil?"chilipir":""}" style="${isChil?"":"color:"+pv.color}">${pv.label}</span>`:""}
+     ${dropPct>0?`<span class="chip drop">▼ preț −${dropPct}%</span>`:""}
+     ${days>=30?`<span class="chip stale">⏳ ${days} zile pe piață — negociază agresiv</span>`:days>0?`<span class="chip">⏳ ${days} zile</span>`:""}
+    </div>
+    <div class="meta mono" style="margin-top:6px">
+     ${[pVal!=null&&`${fmt(pVal)} €`,esc(l.year),l.km&&`${esc(l.km)} km`,`stare ${condOf(l.cond).label.split(" ")[0]}`,`adăugat ${l.added}`].filter(Boolean).join(" · ")}
+     ${totalRO!=null?` · la cheie în RO: ${fmt(totalRO)} €`:""}
+    </div>
+    ${l.priceHist&&l.priceHist.length>1?`<div class="hist">istoric preț: ${l.priceHist.map(h=>`${fmt(h.p)}€ (${h.d})`).join(" → ")}</div>`:""}
+    ${l.note?`<div style="font-size:14px;color:var(--inksoft);margin-top:6px">${esc(l.note)}</div>`:""}
+    <div class="crit">${CRITERIA.map(c=>`<label><input type="checkbox" ${l.crit&&l.crit[c.id]?"checked":""} onchange="A.crit('${l.id}','${c.id}',this)"><span>${c.label} <span class="w">+${c.w}</span></span></label>`).join("")}</div>
+    <div class="lrow">
+     <select onchange="A.st('${l.id}',this)">${STATUSES.map(st=>`<option ${l.status===st?"selected":""}>${st}</option>`).join("")}</select>
+     <select onchange="A.cond('${l.id}',this)">${CONDS.map(c=>`<option value="${c.id}" ${String(l.cond||"2")===c.id?"selected":""}>${c.label.split(" — ")[0]}</option>`).join("")}</select>
+     <button class="btn" onclick="A.upPrice('${l.id}')">💶 Preț nou</button>
+     <label class="cmpchk"><input type="checkbox" ${S.cmp.includes(l.id)?"checked":""} onchange="A.cmpT('${l.id}',this)">compară</label>
+     ${s>=80?`<span class="candidate">★ CANDIDAT</span>`:""}
+     <button class="btn del" onclick="A.del('${l.id}')">Șterge</button>
+    </div>
+   </article>`;
+  });
+  html+=`</div>`;
+ }
+
+ if(S.tab==="agent"){
+  const offers=S.agent.offers.map((o,i)=>({o,i,sc:offerScore(o)}));
+  /* top 10 per model, ierarhizat după scor calitate-preț */
+  const byModel={};
+  offers.sort((a,b)=>b.sc-a.sc).forEach(x=>{
+   byModel[x.o.model]=byModel[x.o.model]||[];
+   if(byModel[x.o.model].length<10)byModel[x.o.model].push(x);
+  });
+  const shown=S.agentModel==="TOATE"?MODELS.map(m=>m.code):[S.agentModel];
+  const excTotal=offers.filter(x=>x.sc>=EXC_THRESHOLD).length;
+
+  html+=`<div class="fade">
+   <div class="seclabel">▸ Top oferte — analizate de agentul zilnic</div>
+   <p style="font-size:14px;color:var(--inksoft);max-width:760px;margin-bottom:14px">
+    Agentul tău din Claude rulează zilnic, analizează platformele din aplicație și produce raportul cu cele mai bune oferte
+    per model, ierarhizate <b style="color:var(--ink)">calitate-preț</b>: preț vs stare, dotări (full options), istoric verificat,
+    negociabilitate și costul aducerii în țară. Lipește mai jos raportul primit și ofertele apar instant.</p>
+   <div class="card flat agent-import">
+    <div class="seclabel">▸ Importă raportul agentului</div>
+    <textarea data-f="agentTxt" placeholder='Lipește aici raportul zilnic (conține blocul {"offers":[...]})' oninput="A.atxt(this)">${esc(S.agentTxt)}</textarea>
+    <div class="btnrow">
+     <button class="btn dark" onclick="A.importAgent()">⭳ Importă raportul</button>
+     ${S.agent.offers.length?`<button class="btn" onclick="A.clearAgent()">Șterge raportul curent</button>`:""}
+    </div>
+    ${S.agentMsg?`<div class="agentmsg ${S.agentMsg.ok?"ok":"err"}">${S.agentMsg.t}</div>`:""}
+   </div>`;
+
+  if(!S.agent.offers.length){
+   html+=`<div class="empty">Niciun raport încărcat încă.<br><br>Cum funcționează: sarcina zilnică „Vânătoarea MB” din Claude generează raportul cu top oferte + blocul JSON.<br>Copiezi blocul, îl lipești mai sus, apeși „Importă” — și ai lista la zi, cu acces rapid la fiecare anunț.</div>`;
+  } else {
+   html+=`<div class="row" style="margin-bottom:12px">
+    <div class="meta mono">Raport din: <b style="color:var(--ink)">${esc(S.agent.generated)}</b> · ${offers.length} oferte · <span style="color:var(--green)">${excTotal} excelente (scor ≥ ${EXC_THRESHOLD})</span></div>
+    <select onchange="A.agentFlt(this)" style="width:auto;font-size:12px;padding:8px">
+     <option value="TOATE" ${S.agentModel==="TOATE"?"selected":""}>Toate modelele</option>
+     ${MODELS.map(x=>`<option ${S.agentModel===x.code?"selected":""}>${x.code}</option>`).join("")}
+    </select>
+   </div>`;
+   shown.forEach(code=>{
+    const grp=byModel[code];if(!grp||!grp.length)return;
+    html+=`<div class="seclabel" style="margin-top:16px">▸ ${code} — top ${grp.length}</div>`;
+    grp.forEach((x,rank)=>{
+     const o=x.o;const p=parsePrice(o.price);const tot=offerTotal(o);const tc=trCost(o.country);
+     const isExc=x.sc>=EXC_THRESHOLD;
+     const already=o.url&&S.listings.some(l=>l.url===o.url);
+     const nl=NEG_LABEL[o.neg]||NEG_LABEL["REF"];
+     html+=`<article class="offer ${isExc?"exc":""}">
+      <span class="rank">#${rank+1}${isExc?" · EXCELENTĂ":""}</span>
+      <div class="row" style="padding-right:70px">
+       <div>
+        <b style="font-size:14px">${esc(o.title)}</b>
+        <div class="meta mono">${[p!=null&&fmt(p)+" €",o.year,o.km&&fmt(parsePrice(o.km))+" km",condOf(o.cond).label.split(" — ")[0],o.country].filter(Boolean).join(" · ")}</div>
+       </div>
+       <div class="oscore" style="color:${isExc?"var(--green)":x.sc>=65?"var(--amber)":"var(--inksoft)"}">${x.sc}<small>/100</small></div>
+      </div>
+      <div class="obadges">
+       ${String(o.options||"").toLowerCase()==="full"?`<span class="ob full">FULL OPTIONS</span>`:""}
+       ${o.history?`<span class="ob hist">✓ ISTORIC VERIFICAT</span>`:""}
+       <span class="ob">${nl[0]}</span>
+       <span class="ob">aducere: ${tc===0?"— (RO)":fmt(tc)+" €"}</span>
+       ${tot!=null?`<span class="ob">la cheie: <b>${fmt(tot)} €</b></span>`:""}
+      </div>
+      ${o.note?`<div style="font-size:13px;color:var(--inksoft);margin-top:8px">${esc(o.note)}</div>`:""}
+      <div class="obreak">scor: preț/stare + dotări + istoric + negociere + aducere + km</div>
+      <div class="btnrow">
+       ${o.url?`<a class="btn primary" style="text-decoration:none;display:inline-flex;align-items:center" href="${esc(o.url)}" target="_blank" rel="noopener">Deschide anunțul ↗</a>`:""}
+       <button class="btn" ${already?"disabled":""} onclick="A.addFromOffer(${x.i})">${already?"✓ În lista ta":"+ În lista mea"}</button>
+      </div>
+     </article>`;
+    });
+   });
+  }
+  html+=`<div class="note" style="margin-top:14px">Alertele de oferte excelente apar în raportul zilnic al agentului și la importul în aplicație. Trimiterea automată pe email necesită componenta de server (vezi roadmap-ul platformei). Verifică întotdeauna anunțul la sursă — agentul analizează, decizia și inspecția rămân ale tale.</div>
+  </div>`;
+ }
+
+ if(S.tab==="ghid"){
+  html+=`<div class="fade">
+   <div class="card flat"><div class="seclabel">▸ Modalități de achiziție</div><ul class="ghid">
+    <li><b>1. Direct de la privat (DE/AT/FR/IT/ES)</b> — cel mai bun preț, negociabil. Obligatoriu: inspecție la fața locului sau expert independent (DEKRA/TÜV, ~100–150 €). Contract scris, acte complete.</li>
+    <li><b>2. Dealer specializat în clasice</b> — preț mai mare, negociere limitată (5–10%), dar garanție și acte impecabile.</li>
+    <li><b>3. Licitații (Collecting Cars, Catawiki, Car &amp; Classic)</b> — prețul NU e negociabil, îl fac bid-urile; vezi în schimb prețul real de piață. Setează-ți limita ÎNAINTE și n-o depăși.</li>
+    <li><b>4. Piața locală (Autovit/OLX)</b> — fără costuri de import, negociabil, dar ofertă mică. Verifică istoric daune în baza RAR.</li>
+    <li><b>Verificare istoric înainte de drum:</b> raport VIN (carVertical / autoDNA, ~20–30 €) + istoricul de daune RAR pentru mașinile din RO.</li>
+    <li><b>Transport:</b> platformă ~300–800 € din DE, 800–1.200 € din ES/PT. Alternativ numere de export (~100–150 €, 30 zile) și condus personal.</li>
+   </ul></div>
+   ${adSlot("infeed","in-feed ghid — ideal pentru parteneri (piese, ateliere, import)")}
+   <div class="card flat"><div class="seclabel">▸ Înmatriculare în România (import UE, 2026)</div><ul class="ghid">
+    <li><b>Da, toate modelele țintă se pot înmatricula.</b> Pentru mașini din UE nu există taxe vamale și nici taxă de poluare. TVA nu se datorează în RO la mașini rulate (peste 6 luni ȘI peste 6.000 km) de la privat sau în regim de marjă — valabil și pentru IT/ES/FR/GR/PT.</li>
+    <li><b>Traseul:</b> ① numere roșii provizorii (DRPCIV) → ② RAR: CIV, certificat de autenticitate, ITP (~740–1.200 RON, programare pe rarom.ro) → ③ Direcția Taxe și Impozite → ④ ANAF: certificat TVA → ⑤ DRPCIV: talon (~50 RON) + plăcuțe (~40–85 RON).</li>
+    <li><b>Costuri totale:</b> tipic 1.500–2.000 RON cu acte complete + traduceri (60–100 RON/doc) + RCA pe serie de șasiu. Durată: 30–60 zile (sau ~10 zile printr-o firmă, 500–1.500 RON).</li>
+    <li><b>Acte fără de care NU cumperi:</b> documentele de înmatriculare din țara de origine (brief mare+mic DE / libretto IT / permiso de circulación ES), contract sau factură clară, carnet de service. Pre-2018 nu e necesar CoC.</li>
+    <li><b>Bonus vehicul istoric (30+ ani):</b> atestare prin Retromobil Club România (FIVA) — avantaje la impozit local, asigurare de colecție, ITP extins. Verifică condițiile curente.</li>
+   </ul></div>
+   <div class="card flat"><div class="seclabel">▸ Strategia de deținere (5–10 ani)</div><ul class="ghid">
+    <li>· <b>Bugetează 15–20% peste prețul de achiziție</b> — transport, înmatriculare, service de intrare. Calculatorul „la cheie în RO” folosește +1.500 € ca estimare standard.</li>
+    <li>· <b>Kilometrajul optim la cumpărare: 80.000–150.000 km documentați.</b> Rulajul foarte mic ia prima cea mai mare, dar orice km condus i-o consumă; 150.000 km rămâne bariera psihologică la revânzare.</li>
+    <li>· <b>Gradele de stare din aplicație:</b> #1 Concurs (+30% peste banda de bază), #2 Excelentă (banda de referință), #3 Bună (−30%), #4 Proiect (−55%). Evaluează sincer — majoritatea anunțurilor „impecabile” sunt de fapt #3.</li>
+    <li>· <b>Depozitare corectă = jumătate din investiție.</b> Garaj uscat, aerisit, husă respirantă, baterie pe menținere.</li>
+    <li>· <b>Documentează tot de la ziua 1:</b> dosar cu facturi, poze, întreținerea ta. La revânzare adaugă 10–20% la preț.</li>
+    <li>· <b>Condu mașina — 1.000–3.000 km/an.</b> Piața din 2026 premiază exemplarele întreținute mecanic și folosite.</li>
+    <li>· <b>Nu cumpăra niciodată nevăzut</b> fără inspecție independentă.</li>
+    <li>· <b>Asigurare de colecție</b> (valoare agreată) după înmatriculare.</li>
+   </ul></div>
+   <div class="card flat"><div class="seclabel">▸ 📱 Instalează aplicația pe telefon</div><ul class="ghid">
+    <li><b>iPhone (Safari):</b> deschide pagina → butonul „Share” (pătratul cu săgeată) → <b>„Add to Home Screen / Adaugă la ecranul principal”</b>.</li>
+    <li><b>Android (Chrome):</b> deschide pagina → meniul ⋮ → <b>„Adaugă la ecranul de pornire / Instalează aplicația”</b>.</li>
+    <li>Datele se salvează pe fiecare dispozitiv separat — folosește <b>Exportă / Importă</b> din meniu (☰) ca să le muți între laptop și telefon.</li>
+   </ul></div>
+   <div class="note">Notă: benchmarkurile de preț sunt intervale orientative (2026) — verifică-le periodic pe Classic.com. Informațiile fiscale pot varia pe județ. Aceasta nu este consultanță financiară. Publicitatea afișată nu reprezintă recomandări ale platformei.</div>
+  </div>`;
+ }
+
+ html+=`${adSlot("footer-ad","banner subsol / responsive")}
+ </div></main>
+ <footer><div class="wrap"><div class="in">VÂNĂTORUL MB v5 · platformă pentru pasionații de Mercedes clasice · datele se salvează pe dispozitivul tău</div></div></footer>`;
+
+ /* Bară comparator */
+ if(S.cmp.length>=2&&S.tab==="lista"&&!S.showCmp){
+  html+=`<div class="cmpbar"><div class="wrap">
+   <span class="t">⚖ ${S.cmp.length} anunțuri selectate pentru comparație</span>
+   <div style="display:flex;gap:8px">
+    <button class="btn primary" onclick="A.cmpOpen()">Compară →</button>
+    <button class="btn" style="background:transparent;color:#C6CBD1;border-color:#3A4048" onclick="A.cmpClear()">Golește</button>
+   </div>
+  </div></div>`;
+ }
+
+ /* Overlay comparator */
+ if(S.showCmp){
+  const rows=S.cmp.map(id=>S.listings.find(l=>l.id===id)).filter(Boolean);
+  html+=`<div class="overlay" onclick="A.cmpClose()"><div class="popup wide fade" onclick="event.stopPropagation()">
+   <div class="seclabel">▸ Comparator finaliști</div>
+   <div style="overflow-x:auto"><table class="cmp-table">
+    <tr><th></th>${rows.map(l=>`<th>${l.model}<br><b style="color:var(--ink);font-size:12px">${esc(l.title)}</b></th>`).join("")}</tr>
+    <tr><th>Preț actual</th>${rows.map(l=>`<td><b>${curPrice(l)!=null?fmt(curPrice(l))+" €":"—"}</b></td>`).join("")}</tr>
+    <tr><th>La cheie în RO</th>${rows.map(l=>`<td>${curPrice(l)!=null?fmt(curPrice(l)+RO_EXTRA)+" €":"—"}</td>`).join("")}</tr>
+    <tr><th>Verdict preț</th>${rows.map(l=>{const pv=verdictOf(modelOf(l.model),curPrice(l),l.cond);return`<td>${pv?pv.label:"—"}</td>`;}).join("")}</tr>
+    <tr><th>Scor investiție</th>${rows.map(l=>`<td><b style="color:${scoreColor(score(l))}">${score(l)}/100</b></td>`).join("")}</tr>
+    <tr><th>Stare</th>${rows.map(l=>`<td>${condOf(l.cond).label.split(" — ")[0]}</td>`).join("")}</tr>
+    <tr><th>An / Km</th>${rows.map(l=>`<td>${esc(l.year)||"—"} / ${l.km?esc(l.km)+" km":"—"}</td>`).join("")}</tr>
+    <tr><th>Zile pe piață</th>${rows.map(l=>`<td>${daysOf(l)}</td>`).join("")}</tr>
+    <tr><th>Status</th>${rows.map(l=>`<td>${l.status}</td>`).join("")}</tr>
+   </table></div>
+   <p style="font-size:12px">Regula finală: dintre finaliști cu scoruri apropiate, câștigă cel cu istoricul de service mai complet — nu cel mai ieftin.</p>
+   <button class="btn dark close" onclick="A.cmpClose()">Închide comparatorul</button>
+  </div></div>`;
+ }
+
+ /* Pop-up oferte excelente la import */
+ if(S.agentPop>0){
+  html+=`<div class="overlay" onclick="A.closeAP()"><div class="popup fade" onclick="event.stopPropagation()" style="border-color:var(--green)">
+   <span class="badge" style="background:var(--green)">⭐ OFERTE EXCELENTE</span>
+   <h3>${S.agentPop} ofert${S.agentPop===1?"ă iese":"e ies"} clar în evidență</h3>
+   <p>Raportul agentului conține ofert${S.agentPop===1?"ă":"e"} cu scor calitate-preț ≥ ${EXC_THRESHOLD} — marcat${S.agentPop===1?"ă":"e"} cu verde în listă.
+   Comparativ cu celelalte anunțuri de același gen, ${S.agentPop===1?"aceasta merită":"acestea merită"} <b>contact în aceeași zi</b>: exemplarele
+   full options cu istoric verificat la preț sub piață dispar primele.</p>
+   <button class="btn dark close" onclick="A.closeAP()">Vezi ofertele marcate</button>
+  </div></div>`;
+ }
+
+ /* Pop-up chilipir */
+ if(S.bargain){
+  html+=`<div class="overlay" onclick="A.closeB()"><div class="popup fade" onclick="event.stopPropagation()">
+   <span class="badge">⚠ ALERTĂ CHILIPIR</span>
+   <h3>${esc(S.bargain.title)}</h3>
+   <div class="pm">${S.bargain.model} · ${esc(S.bargain.price)} € — ${S.bargain.desc}</div>
+   <p>Un preț atât de jos are întotdeauna un motiv: fie vânzătorul e grăbit (moștenire, plecare din țară — chilipirul real),
+   fie mașina ascunde ceva (rugină structurală, km dați înapoi, acte incomplete). <b>Acționează în 24h:</b> sună, cere poze
+   cu podeaua/pragurile/carnetul, programează inspecție.</p>
+   <button class="btn dark close" onclick="A.closeB()">Am înțeles — verific imediat</button>
+  </div></div>`;
+ }
+
+ document.getElementById("app").innerHTML=html;
+ if(activeId){const el=document.querySelector(`[data-f="${activeId}"]`);if(el){el.focus();try{el.setSelectionRange(selStart,selStart);}catch(e){}}}
+}
+load();render();
+</script>
+</body>
+</html>

@@ -1,0 +1,40 @@
+/* ============================================================
+   VÂNĂTORUL MB — Design tokens „Datenkarte" (sursa: v5)
+   Se importă global în Next.js (app/globals.css).
+   Componentele de referință (Plate, Card, Badge, Offer, Popup)
+   au CSS-ul complet în reference/vanatorul-mercedes-v5.html.
+   ============================================================ */
+
+/* Fonturile (Archivo + IBM Plex Mono) se încarcă prin next/font în app/layout.tsx
+   — self-hosted, fără blocarea randării. NU reintroduce @import de Google Fonts aici:
+   costă ~2-4 puncte la Lighthouse mobile (criteriul M0 este ≥90). */
+
+:root {
+  /* Culori — identice cu v5, nu se modifică fără acordul beneficiarului */
+  --ink: #22262B;        /* grafit — text principal, fundal header */
+  --inksoft: #4A5058;    /* grafit deschis — text secundar */
+  --paper: #EDEFF1;      /* fundal aplicație — gri rece, hală de service */
+  --panel: #FAFBFC;      /* panouri / carduri */
+  --line: #C9CED4;       /* linii argintii — borduri */
+  --linesoft: #DDE1E5;   /* borduri fine */
+  --red: #B3121B;        /* DB 568 signalrot — accent unic: alerte + acțiuni primare */
+  --green: #2E6B4F;      /* pozitiv: sub piață, verificat, excelent */
+  --amber: #9A6A00;      /* atenție: la piață, negociere parțială */
+  --plate: #D6DADF;      /* plăcuța de șasiu (componenta Plate) */
+  --plateedge: #9FA6AE;  /* muchia plăcuței, text discret */
+
+  /* Tipografie */
+  /* Fallback — valorile reale sunt injectate de next/font pe <html> (layout.tsx) */
+  --font-display: 'Archivo', system-ui, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+
+  /* Ritm */
+  --radius: 3px;         /* colțuri — tăietură tehnică, niciodată rotunjiri mari */
+  --touch-min: 44px;     /* țintă minimă de atingere pe mobil */
+}
+
+/* Semantica de culoare (regulă de produs, nu doar de stil):
+   roșu  = alertă + acțiune principală (un singur accent);
+   verde = confirmat / avantajos / excelent;
+   galben= atenție / neutru-pozitiv;
+   grafit= conținut. Nu se introduc culori noi fără decizie de design. */
