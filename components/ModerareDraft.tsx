@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { importDraft, rejectDraft } from '@/app/admin/oferte/actions';
+import { importDraft, rejectDraft } from '@/app/(with-sidebar)/admin/oferte/actions';
 
 export default function ModerareDraft({ draftId }: { draftId: string }) {
   const router = useRouter();

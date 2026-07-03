@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { TargetModel } from '@/lib/models';
 import { condOf } from '@/lib/scoring';
-import { submitNativeOffer } from '@/app/cont/oferte/actions';
+import { submitNativeOffer } from '@/app/(with-sidebar)/cont/oferte/actions';
 
 export default function PublicaAnuntForm({ models }: { models: TargetModel[] }) {
   const [busy, setBusy] = useState(false);

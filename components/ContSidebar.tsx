@@ -24,7 +24,13 @@ export default function ContSidebar({ email, isAdmin }: { email: string | null; 
 
   return (
     <aside className="cont-sidebar">
-      {email && <div className="cont-sidebar-email mono">{email}</div>}
+      {email ? (
+        <div className="cont-sidebar-email mono">{email}</div>
+      ) : (
+        <div className="cont-sidebar-email mono">
+          <Link href="/autentificare">Autentificare</Link> · <Link href="/inregistrare">Creează cont</Link>
+        </div>
+      )}
       <nav>
         {links.map((l) => (
           <Link key={l.href} href={l.href} className={pathname === l.href ? 'on' : ''}>
@@ -32,11 +38,13 @@ export default function ContSidebar({ email, isAdmin }: { email: string | null; 
           </Link>
         ))}
       </nav>
-      <form action={signOut}>
-        <button type="submit" className="btn" style={{ width: '100%', marginTop: 16 }}>
-          Deconectează-te
-        </button>
-      </form>
+      {email && (
+        <form action={signOut}>
+          <button type="submit" className="btn" style={{ width: '100%', marginTop: 16 }}>
+            Deconectează-te
+          </button>
+        </form>
+      )}
     </aside>
   );
 }

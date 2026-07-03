@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { importOffersReport } from '@/app/cont/oferte/actions';
+import { importOffersReport } from '@/app/(with-sidebar)/cont/oferte/actions';
 
 export default function ImportOferteForm() {
   const router = useRouter();

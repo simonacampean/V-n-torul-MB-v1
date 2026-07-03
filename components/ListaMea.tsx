@@ -10,7 +10,7 @@ import {
 } from '@/lib/scoring';
 import {
   addWatchlistItem, updateCriterion, updateStatus, updateCond, addPriceUpdate, deleteWatchlistItem,
-} from '@/app/cont/lista/actions';
+} from '@/app/(with-sidebar)/cont/lista/actions';
 
 export interface WatchlistItem {
   id: string;

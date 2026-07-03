@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { moderateOffer } from '@/app/admin/oferte/actions';
+import { moderateOffer } from '@/app/(with-sidebar)/admin/oferte/actions';
 
 export default function ModerareOferta({ offerId }: { offerId: string }) {
   const router = useRouter();
