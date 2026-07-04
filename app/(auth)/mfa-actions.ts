@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { generateBackupCodes, hashBackupCode, looksLikeBackupCode } from '@/lib/auth/backup-codes';
+import { logAudit } from '@/lib/audit';
 
 export type MfaActionResult = { error: string } | { ok: true };
 
@@ -28,6 +29,7 @@ export async function issueBackupCodes(): Promise<{ codes: string[] } | { error:
   const { error: insErr } = await supabase.from('mfa_backup_codes').insert(rows);
   if (insErr) return { error: insErr.message };
 
+  await logAudit('mfa_enroll', { userId: user.id, email: user.email });
   revalidatePath('/cont/securitate');
   return { codes };
 }
@@ -47,6 +49,7 @@ export async function disableTotp(factorId: string, code: string): Promise<MfaAc
   if (unenrollErr) return { error: unenrollErr.message };
 
   await supabase.from('mfa_backup_codes').delete().eq('user_id', user.id);
+  await logAudit('mfa_unenroll', { userId: user.id, email: user.email });
   revalidatePath('/cont/securitate');
   return { ok: true };
 }
@@ -69,6 +72,7 @@ export async function verifyLoginFactor(factorId: string, code: string): Promise
 
   const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code });
   if (error) return { error: 'Cod incorect.' };
+  await logAudit('login', { userId: user.id, email: user.email, detail: { via: 'totp' } });
   return { ok: true };
 }
 
@@ -98,7 +102,9 @@ async function verifyBackupCodeAndRecover(userId: string, code: string): Promise
   const totp = factors?.factors.find((f) => f.factor_type === 'totp' && f.status === 'verified');
   if (totp) {
     await admin.auth.admin.mfa.deleteFactor({ id: totp.id, userId });
+    await logAudit('mfa_unenroll', { userId, detail: { reason: 'backup_code_recovery' } });
   }
+  await logAudit('login', { userId, detail: { via: 'backup_code' } });
 
   // getAuthenticatorAssuranceLevel() (apelat fără jwt, ca în middleware/pagini)
   // citește sesiunea din cache local, nu live — fără refresh, sesiunea curentă

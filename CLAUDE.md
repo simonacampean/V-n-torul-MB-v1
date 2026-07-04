@@ -16,8 +16,8 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 - **M3 complet** (Notificări: preferințe S-05, alerte email S-02/S-03 prin Resend, digest anti-spam S-04, dezabonare cu un click) — detalii: `docs/M3-status.md`. Verificat live: email real ajuns în inbox, anti-spam confirmat, dezabonare funcțională.
 - Proiectul e live pe **https://vanatorul-mb.vercel.app**, cu deploy automat la fiecare push pe `main` (repo: `github.com/simonacampean/V-n-torul-MB-v1`). Cron job-urile Vercel rulează pe plan Hobby — max o dată/zi.
 - **M4 complet** (Stripe checkout/portal/webhook, modul publicitate AD-03, consimțământ cookie GDPR-03 Consent Mode v2, linkuri afiliere carVertical/autoDNA) — detalii: `docs/M4-status.md`. Verificat live de beneficiar: abonare cu card de test și anulare din Customer Portal funcționează corect.
+- **M5 complet** (panou admin AD-01/AD-04, jurnal de audit SEC-04, consimțământ înregistrare + ștergere cont self-service GDPR-01/02, CSP/HSTS SEC-01, SEO + OpenGraph, Sentry, backup DB documentat, test de încărcare) — detalii: `docs/M5-status.md`, cu checklist de lansare pregătit pentru semnătura beneficiarului. Platforma e completă tehnic conform caietului M0–M5.
 - UI: meniu global drop-down (buton ☰ în antet, `components/SiteMenu.tsx`) pe toate paginile; antet compact pe mobil.
-- Următorul milestone: **M5 — Lansare** (panou admin complet, pagini legale, SEO, Sentry, backup automat DB, test de încărcare) — nu începe fără confirmarea explicită a beneficiarului.
 
 ## Fluxul de lucru
 - Respectă ordinea milestone-urilor M0 → M5 din caiet. Nu începe un milestone nou înainte ca criteriile de acceptare ale celui curent să treacă.
@@ -32,14 +32,14 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 4. **Securitate reală, nu decorativă:** RLS pe toate datele de utilizator (testul user-A-nu-vede-user-B e obligatoriu), MFA prin Supabase (nu criptografie proprie), validare server-side cu zod, sanitizare la afișare.
 5. **GDPR:** export date, ștergere cont, consimțământ cookie (Consent Mode v2) — cerințe de lansare, nu „nice to have".
 
-## Primele sarcini (M5 — Lansare)
-1. Panou admin complet (dincolo de moderare oferte/publicitate deja existente).
-2. Pagini legale (Termeni, Confidențialitate, GDPR) — conținut real, nu placeholder.
-3. SEO: metadata per pagină, sitemap, OpenGraph cu blueprint-urile SVG proprii.
-4. Monitorizare erori (Sentry) + backup automat DB.
-5. Test de încărcare de bază, apoi checklist de lansare semnat de beneficiar pe staging → go-live.
-
-## Restanțe cunoscute de M4 (netratate ca blocante, per criteriul de acceptare din caiet)
-- ID-uri reale de afiliat carVertical/autoDNA și client ID AdSense — vezi `docs/M4-status.md`.
+## Restanțe cunoscute (nu blochează criteriile de acceptare, vezi detalii în docs/M4-status.md și docs/M5-status.md)
+- ID-uri reale de afiliat carVertical/autoDNA și client ID AdSense.
 - Alerte email instant la premium — necesită Vercel Pro pentru cron mai frecvent de o dată/zi.
-- Stripe rămâne în test-mode; trecerea la live-mode e o sarcină de lansare (M5).
+- Stripe rămâne în test-mode; upgrade Supabase Free → Pro (backup automat real); Sentry DSN de completat.
+- Next.js 14.2 → 16 (CVE-uri rezolvate în major versions mai noi) — upgrade planificat separat, nu reactiv.
+- `transport_costs`/`reg_cost_eur`: cod de scoring folosește azi doar seed hardcodat, nu citește din DB — panou admin pentru asta ar necesita întâi conectarea reală, apoi CRUD-ul.
+
+## Checklist de lansare (așteaptă semnătura/confirmarea beneficiarului — vezi docs/M5-status.md)
+Toate cele 6 milestone-uri (M0–M5) sunt complete tehnic. Următorul pas e al beneficiarului: bifarea
+checklist-ului de lansare din `docs/M5-status.md` (upgrade Supabase Pro, DSN Sentry, verificare
+juridică pagini legale, Stripe live-mode, domeniu final) și confirmarea go-live-ului.

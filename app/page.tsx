@@ -81,17 +81,10 @@ export default async function Home() {
           <p className="meta mono" style={{ maxWidth: 760 }}>
             Benzile de preț sunt intervale orientative — aceasta nu este consultanță financiară.
           </p>
+
+          <AdSlot position="footer" />
         </div>
       </main>
-
-      <footer className="site">
-        <div className="wrap">
-          <AdSlot position="footer" />
-          <div className="in">
-            VÂNĂTORUL MB v2.0 · platformă pentru pasionații de Mercedes clasice
-          </div>
-        </div>
-      </footer>
     </>
   );
 }

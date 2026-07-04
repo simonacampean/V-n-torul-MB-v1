@@ -1,10 +1,23 @@
 import Link from 'next/link';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import { getTargetModels, fmt } from '@/lib/models';
 import { condOf, trCost, offerTotal, EXC_THRESHOLD } from '@/lib/scoring';
 import { NEG_LABEL } from '@/lib/hunt';
 import { historyCheckLinks } from '@/lib/affiliates';
 import AdSlot from '@/components/AdSlot';
+
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<{ model?: string }>;
+}): Promise<Metadata> {
+  const { model } = await searchParams;
+  const title = model && model !== 'TOATE' ? `Top oferte ${model} — Vânătorul MB` : 'Top oferte — Vânătorul MB';
+  const description =
+    'Cele mai bune oferte de Mercedes-Benz clasice, ierarhizate calitate-preț: preț vs stare, dotări, istoric verificat, negociabilitate și cost de aducere în România.';
+  return { title, description, robots: { index: true, follow: true } };
+}
 
 interface OfferRow {
   id: string;

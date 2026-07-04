@@ -19,8 +19,11 @@ const LINKS = [
 ];
 
 const ADMIN_LINKS = [
+  { href: '/admin', label: 'Dashboard admin' },
   { href: '/admin/oferte', label: 'Moderare anunțuri' },
   { href: '/admin/publicitate', label: 'Publicitate' },
+  { href: '/admin/modele', label: 'Modele țintă' },
+  { href: '/admin/platforme', label: 'Platforme' },
 ];
 
 export default function ContSidebar({ email, isAdmin }: { email: string | null; isAdmin: boolean }) {

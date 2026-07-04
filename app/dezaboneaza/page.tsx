@@ -1,4 +1,7 @@
+import type { Metadata } from 'next';
 import { createAdminClient } from '@/lib/supabase/admin';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 /**
  * S-04 — dezabonare cu un click, direct din linkul din email, fără login

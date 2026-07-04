@@ -5,6 +5,7 @@ import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { validatePassword } from '@/lib/auth/password-policy';
+import { logAudit } from '@/lib/audit';
 
 const emailSchema = z.string().email('Adresă de email invalidă.');
 
@@ -15,6 +16,11 @@ function siteUrl() {
 export async function signUp(formData: FormData) {
   const email = String(formData.get('email') ?? '');
   const password = String(formData.get('password') ?? '');
+  // GDPR-01 — ToS/Politica de confidențialitate: consimțământ obligatoriu.
+  // Marketing: consimțământ SEPARAT și opțional (alertele de produs nu sunt
+  // marketing — sunt legitime prin contract, deci nu depind de această bifă).
+  const tosAccepted = formData.get('tos_accepted') === 'on';
+  const marketingConsent = formData.get('marketing_consent') === 'on';
 
   const emailCheck = emailSchema.safeParse(email);
   if (!emailCheck.success) {
@@ -26,11 +32,18 @@ export async function signUp(formData: FormData) {
     redirect(`/inregistrare?error=${encodeURIComponent(passwordCheck.message)}`);
   }
 
+  if (!tosAccepted) {
+    redirect(`/inregistrare?error=${encodeURIComponent('Trebuie să accepți Termenii și Politica de confidențialitate.')}`);
+  }
+
   const supabase = await createClient();
   const { error } = await supabase.auth.signUp({
     email,
     password,
-    options: { emailRedirectTo: `${siteUrl()}/auth/callback` },
+    options: {
+      emailRedirectTo: `${siteUrl()}/auth/callback`,
+      data: { tos_accepted: true, marketing_consent: marketingConsent },
+    },
   });
 
   if (error) {
@@ -46,7 +59,7 @@ export async function signIn(formData: FormData) {
   const redirectTo = String(formData.get('redirect_to') ?? '/cont');
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data: signInData, error } = await supabase.auth.signInWithPassword({ email, password });
 
   if (error) {
     redirect(`/autentificare?error=${encodeURIComponent('Email sau parolă incorectă.')}`);
@@ -57,6 +70,10 @@ export async function signIn(formData: FormData) {
   if (aal && aal.nextLevel === 'aal2' && aal.currentLevel !== 'aal2') {
     redirect(`/verifica-2fa?redirect_to=${encodeURIComponent(redirectTo)}`);
   }
+
+  // SEC-04 — login complet fără al doilea factor (userul nu are 2FA activ);
+  // cazul cu 2FA se loghează la finalul verificării, în verifyLoginFactor.
+  await logAudit('login', { userId: signInData.user?.id, email: signInData.user?.email });
 
   revalidatePath('/', 'layout');
   redirect(redirectTo);
@@ -104,5 +121,6 @@ export async function updatePassword(password: string): Promise<UpdatePasswordRe
   const { error } = await supabase.auth.updateUser({ password });
   if (error) return { error: error.message };
 
+  await logAudit('password_change', { userId: user.id, email: user.email });
   return { ok: true };
 }

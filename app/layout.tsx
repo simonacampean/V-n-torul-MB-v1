@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Mono } from 'next/font/google';
 import SiteHeader from '@/components/SiteHeader';
+import SiteFooter from '@/components/SiteFooter';
 import ConsentDefaultScript from '@/components/ConsentDefaultScript';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import AdSenseLoader from '@/components/AdSenseLoader';
@@ -21,11 +22,29 @@ const plexMono = IBM_Plex_Mono({
   display: 'swap',
 });
 
+const TITLE = 'Vânătorul MB — Investiții Mercedes clasice';
+const DESCRIPTION =
+  'Platformă pentru pasionații de Mercedes-Benz clasice: modele-țintă, căutare în toată Europa, evaluator de prețuri pe grade de stare și alerte de chilipiruri.';
+
 export const metadata: Metadata = {
-  title: 'Vânătorul MB — Investiții Mercedes clasice',
-  description:
-    'Platformă pentru pasionații de Mercedes-Benz clasice: modele-țintă, căutare în toată Europa, evaluator de prețuri pe grade de stare și alerte de chilipiruri.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001'),
+  title: TITLE,
+  description: DESCRIPTION,
   applicationName: 'Vânătorul MB',
+  openGraph: {
+    title: TITLE,
+    description: DESCRIPTION,
+    siteName: 'Vânătorul MB',
+    locale: 'ro_RO',
+    type: 'website',
+    images: ['/opengraph-image'],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: TITLE,
+    description: DESCRIPTION,
+    images: ['/opengraph-image'],
+  },
 };
 
 export const viewport: Viewport = {
@@ -42,6 +61,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ConsentDefaultScript />
         <SiteHeader />
         {children}
+        <SiteFooter />
         <CookieConsentBanner />
         <AdSenseLoader />
       </body>

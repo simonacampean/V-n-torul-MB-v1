@@ -29,6 +29,19 @@ export default async function InregistrarePage({
           Parolă (minim 10 caractere)
           <input type="password" name="password" required minLength={10} autoComplete="new-password" />
         </label>
+
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <input type="checkbox" name="tos_accepted" required style={{ width: 'auto', marginTop: 4 }} />
+          <span>
+            Am citit și accept <Link href="/termeni">Termenii și condițiile</Link> și{' '}
+            <Link href="/confidentialitate">Politica de confidențialitate</Link>. *
+          </span>
+        </label>
+        <label style={{ display: 'flex', alignItems: 'flex-start', gap: 8 }}>
+          <input type="checkbox" name="marketing_consent" style={{ width: 'auto', marginTop: 4 }} />
+          <span>Vreau să primesc și emailuri de marketing (opțional — alertele de produs nu depind de această bifă).</span>
+        </label>
+
         <button type="submit">Creează cont</button>
       </form>
 

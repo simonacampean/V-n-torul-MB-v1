@@ -3,9 +3,11 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
+import { logAudit } from '@/lib/audit';
 
-type AdminCheck = { error: string } | { supabase: Awaited<ReturnType<typeof createClient>> };
+type AdminCheck = { error: string } | { supabase: Awaited<ReturnType<typeof createClient>>; user: User };
 
 async function requireAdmin(): Promise<AdminCheck> {
   const supabase = await createClient();
@@ -17,7 +19,7 @@ async function requireAdmin(): Promise<AdminCheck> {
   const { data: profile } = await supabase.from('profiles').select('role').eq('user_id', user.id).single();
   if (profile?.role !== 'admin') return { error: 'Doar administratorii pot face asta.' };
 
-  return { supabase };
+  return { supabase, user };
 }
 
 const campaignSchema = z.object({
@@ -57,6 +59,7 @@ export async function createCampaign(formData: FormData): Promise<void> {
   });
   if (error) redirect(`/admin/publicitate?err=${encodeURIComponent(error.message)}`);
 
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'create_campaign', position: parsed.data.position } });
   revalidatePath('/admin/publicitate');
   redirect('/admin/publicitate');
 }
@@ -68,6 +71,7 @@ export async function toggleCampaign(campaignId: string, active: boolean): Promi
   const { error } = await check.supabase.from('ad_campaigns').update({ active }).eq('id', campaignId);
   if (error) return { error: error.message };
 
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'toggle_campaign', campaignId, active } });
   revalidatePath('/admin/publicitate');
   return { ok: true };
 }
@@ -79,6 +83,7 @@ export async function deleteCampaign(campaignId: string): Promise<{ error: strin
   const { error } = await check.supabase.from('ad_campaigns').delete().eq('id', campaignId);
   if (error) return { error: error.message };
 
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'delete_campaign', campaignId } });
   revalidatePath('/admin/publicitate');
   return { ok: true };
 }

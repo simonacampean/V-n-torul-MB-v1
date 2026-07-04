@@ -1,6 +1,14 @@
 import type { ReactNode } from 'react';
+import type { Metadata } from 'next';
 import { createClient } from '@/lib/supabase/server';
 import ContSidebar from '@/components/ContSidebar';
+
+// SEO — implicit „noindex" pentru tot ce e cont/admin (fără valoare publică
+// de căutare); /oferte, singura pagină publică din acest grup, își suprascrie
+// explicit robots-ul în propriul export const metadata.
+export const metadata: Metadata = {
+  robots: { index: false, follow: false },
+};
 
 export default async function ContLayout({ children }: { children: ReactNode }) {
   const supabase = await createClient();

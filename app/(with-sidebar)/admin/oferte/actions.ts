@@ -7,6 +7,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { getTargetModels } from '@/lib/models';
 import { validateOffers, planOfferImport } from '@/lib/offers';
 import { applyImportPlan } from '@/lib/server/offers-import';
+import { logAudit } from '@/lib/audit';
 
 type AdminCheckResult = { error: string } | { user: User };
 
@@ -40,6 +41,7 @@ export async function moderateOffer(
   const { error } = await supabase.from('offers').update({ moderation: decision }).eq('id', offerId);
   if (error) return { error: error.message };
 
+  await logAudit('admin_action', { userId: user.id, email: user.email, detail: { action: 'moderate_offer', offerId, decision } });
   revalidatePath('/admin/oferte');
   revalidatePath('/oferte');
   return { ok: true };
@@ -84,6 +86,7 @@ export async function importDraft(draftId: string): Promise<ImportDraftResult> {
 
   await admin.from('agent_report_drafts').update({ status: 'imported' }).eq('id', draftId);
 
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'import_draft', draftId, inserted, updated } });
   revalidatePath('/admin/oferte');
   revalidatePath('/oferte');
   return { ok: true, inserted, updated, skipped: invalidSkipped };
@@ -97,6 +100,7 @@ export async function rejectDraft(draftId: string): Promise<{ error: string } | 
   const { error } = await admin.from('agent_report_drafts').update({ status: 'rejected' }).eq('id', draftId);
   if (error) return { error: error.message };
 
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'reject_draft', draftId } });
   revalidatePath('/admin/oferte');
   return { ok: true };
 }

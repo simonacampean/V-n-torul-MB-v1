@@ -1,6 +1,8 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DateMele from '@/components/DateMele';
+import ContDeletion from '@/components/ContDeletion';
+import { getDeletionStatus } from './actions';
 
 export default async function DatePage() {
   const supabase = await createClient();
@@ -14,10 +16,13 @@ export default async function DatePage() {
     redirect('/verifica-2fa?redirect_to=/cont/date');
   }
 
+  const deletionStatus = await getDeletionStatus();
+
   return (
     <div>
       <h1 className="page-title">Datele mele</h1>
       <DateMele />
+      <ContDeletion status={deletionStatus} />
     </div>
   );
 }
