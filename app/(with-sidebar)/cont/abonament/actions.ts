@@ -9,8 +9,16 @@ function siteUrl() {
   return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
 }
 
-/** Creează sesiunea Stripe Checkout (Customer nou dacă e primul abonament) și redirecționează. */
-export async function createCheckoutSession(plan: BillingPlan) {
+export type BillingSessionResult = { url: string } | { error: string };
+
+/**
+ * Creează sesiunea Stripe Checkout (Customer nou dacă e primul abonament).
+ * Întoarce URL-ul, NU apelează redirect(): redirect() dintr-un server action
+ * nu poate naviga către un domeniu extern (fetch-ul intern e blocat de CORS
+ * și pagina rămâne pe loc, fără nicio eroare vizibilă) — clientul face
+ * window.location.assign(url). Bug găsit la testul live al beneficiarului.
+ */
+export async function createCheckoutSession(plan: BillingPlan): Promise<BillingSessionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -44,12 +52,12 @@ export async function createCheckoutSession(plan: BillingPlan) {
     subscription_data: { metadata: { user_id: user.id } },
   });
 
-  if (!session.url) throw new Error('Stripe nu a întors un URL de checkout.');
-  redirect(session.url);
+  if (!session.url) return { error: 'Stripe nu a întors un URL de checkout.' };
+  return { url: session.url };
 }
 
 /** Deschide Customer Portal — de acolo userul își poate anula/schimba abonamentul. */
-export async function createPortalSession() {
+export async function createPortalSession(): Promise<BillingSessionResult> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -64,7 +72,7 @@ export async function createPortalSession() {
     .maybeSingle();
 
   if (!sub?.stripe_customer_id) {
-    redirect(`/cont/abonament?error=${encodeURIComponent('Nu ai încă un abonament activ.')}`);
+    return { error: 'Nu ai încă un abonament activ.' };
   }
 
   const stripe = getStripe();
@@ -72,5 +80,5 @@ export async function createPortalSession() {
     customer: sub.stripe_customer_id,
     return_url: `${siteUrl()}/cont/abonament`,
   });
-  redirect(session.url);
+  return { url: session.url };
 }
