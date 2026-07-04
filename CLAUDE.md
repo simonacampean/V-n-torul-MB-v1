@@ -15,8 +15,9 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 - **M2 complet** (Motorul de oferte: schema `offers`, scoring S-01 via pg_cron, import I-02 cu deduplicare I-05, publicare nativă I-03 cu moderare AD-02) — detalii: `docs/M2-status.md`.
 - **M3 complet** (Notificări: preferințe S-05, alerte email S-02/S-03 prin Resend, digest anti-spam S-04, dezabonare cu un click) — detalii: `docs/M3-status.md`. Verificat live: email real ajuns în inbox, anti-spam confirmat, dezabonare funcțională.
 - Proiectul e live pe **https://vanatorul-mb.vercel.app**, cu deploy automat la fiecare push pe `main` (repo: `github.com/simonacampean/V-n-torul-MB-v1`). Cron job-urile Vercel rulează pe plan Hobby — max o dată/zi.
-- **M4 — Monetizare, în curs** (confirmat de beneficiar). Construit și verificat local: Stripe checkout/portal/webhook + pagina `/cont/abonament` (migrarea `0008_stripe_billing.sql` aplicată în cloud), modul publicitate AD-03 (CRUD admin `/admin/publicitate`, sloturi `AdSlot` cu fallback AdSense, tracking afișări/clickuri prin `/api/ads/*`), banner consimțământ GDPR-03 Consent Mode v2 (implicit „denied"; scriptul AdSense se încarcă doar după accept), linkuri afiliere carVertical/autoDNA (`lib/affiliates.ts`) pe ofertele fără istoric verificat. **Rămas pentru Punctul de control M4**: testul live Stripe — beneficiarul și-a creat cont sandbox, se așteaptă cheia `sk_test_...`; apoi: creare produs+prețuri via API, completare `.env.local` (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_PRICE_MONTHLY/YEARLY`) + env Vercel, plată test cu 4242 4242 4242 4242, verificare sincronizare rol premium→user la anulare; la final `docs/M4-status.md`, commit + deploy.
+- **M4 complet** (Stripe checkout/portal/webhook, modul publicitate AD-03, consimțământ cookie GDPR-03 Consent Mode v2, linkuri afiliere carVertical/autoDNA) — detalii: `docs/M4-status.md`. Verificat live de beneficiar: abonare cu card de test și anulare din Customer Portal funcționează corect.
 - UI: meniu global drop-down (buton ☰ în antet, `components/SiteMenu.tsx`) pe toate paginile; antet compact pe mobil.
+- Următorul milestone: **M5 — Lansare** (panou admin complet, pagini legale, SEO, Sentry, backup automat DB, test de încărcare) — nu începe fără confirmarea explicită a beneficiarului.
 
 ## Fluxul de lucru
 - Respectă ordinea milestone-urilor M0 → M5 din caiet. Nu începe un milestone nou înainte ca criteriile de acceptare ale celui curent să treacă.
@@ -31,9 +32,14 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 4. **Securitate reală, nu decorativă:** RLS pe toate datele de utilizator (testul user-A-nu-vede-user-B e obligatoriu), MFA prin Supabase (nu criptografie proprie), validare server-side cu zod, sanitizare la afișare.
 5. **GDPR:** export date, ștergere cont, consimțământ cookie (Consent Mode v2) — cerințe de lansare, nu „nice to have".
 
-## Primele sarcini (M4 — Monetizare)
-1. Stripe: plan premium lunar/anual, checkout + portal de gestionare abonament (`subscriptions` deja definit în `0001_schema.sql`).
-2. Gating-ul funcțiilor premium — alertele „instant" (S-04) devin reale abia acum (`isPremiumActive` din `lib/notifications.ts` e deja pregătit); necesită și upgrade la Vercel Pro pentru cron mai frecvent decât o dată/zi.
-3. Modulul de publicitate AD-03 cu CMP conform GDPR-03 (Consent Mode v2).
-4. Linkuri de afiliere (carVertical/autoDNA) în fluxul de verificare istoric.
-5. Verifică criteriile de acceptare M4 din caiet, apoi raportează beneficiarului.
+## Primele sarcini (M5 — Lansare)
+1. Panou admin complet (dincolo de moderare oferte/publicitate deja existente).
+2. Pagini legale (Termeni, Confidențialitate, GDPR) — conținut real, nu placeholder.
+3. SEO: metadata per pagină, sitemap, OpenGraph cu blueprint-urile SVG proprii.
+4. Monitorizare erori (Sentry) + backup automat DB.
+5. Test de încărcare de bază, apoi checklist de lansare semnat de beneficiar pe staging → go-live.
+
+## Restanțe cunoscute de M4 (netratate ca blocante, per criteriul de acceptare din caiet)
+- ID-uri reale de afiliat carVertical/autoDNA și client ID AdSense — vezi `docs/M4-status.md`.
+- Alerte email instant la premium — necesită Vercel Pro pentru cron mai frecvent de o dată/zi.
+- Stripe rămâne în test-mode; trecerea la live-mode e o sarcină de lansare (M5).
