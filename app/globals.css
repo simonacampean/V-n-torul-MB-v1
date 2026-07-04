@@ -211,6 +211,20 @@ main { padding: 18px 0 10px; }
 .intro { font-size: 14px; line-height: 1.55; color: var(--inksoft); margin-bottom: 18px; max-width: 760px; }
 .intro b { color: var(--ink); }
 
+/* ===== Onboarding + statistici personale (/cont) — portate din v5 (.onb/.dstats) ===== */
+.onb {
+  background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--red);
+  border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px;
+  font-size: 14px; color: var(--inksoft); line-height: 1.6;
+}
+.onb b { color: var(--ink); }
+.statcard {
+  display: block; background: var(--panel); border: 1px solid var(--line);
+  border-left: 4px solid var(--ink); border-radius: var(--radius);
+  padding: 14px 16px; text-decoration: none; color: var(--ink);
+}
+.statcard:hover, .statcard:focus-visible { border-left-color: var(--red); }
+
 /* ===== Fotografie model (homepage) — Wikimedia Commons, licențe libere ===== */
 .model-photo { margin-bottom: 14px; }
 .model-photo img {

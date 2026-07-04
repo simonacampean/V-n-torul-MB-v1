@@ -37,12 +37,24 @@ interface OfferRow {
   excellent: boolean;
 }
 
+const SORTS = {
+  scor: { column: 'score', ascending: false, label: 'Scor (desc.)' },
+  pret: { column: 'price', ascending: true, label: 'Preț (cresc.)' },
+  an: { column: 'year', ascending: false, label: 'An (desc.)' },
+} as const;
+type SortKey = keyof typeof SORTS;
+
 export default async function OfertePage({
   searchParams,
 }: {
-  searchParams: Promise<{ model?: string }>;
+  searchParams: Promise<{ model?: string; pret_max?: string; tara?: string; sort?: string }>;
 }) {
-  const { model: modelFilter } = await searchParams;
+  const params = await searchParams;
+  const modelFilter = params.model;
+  const pretMax = Number.parseInt(params.pret_max ?? '', 10) || null;
+  const taraFilter = params.tara && /^[A-Z]{2}$/.test(params.tara) ? params.tara : null;
+  const sortKey: SortKey = params.sort && params.sort in SORTS ? (params.sort as SortKey) : 'scor';
+  const sort = SORTS[sortKey];
 
   const supabase = await createClient();
   const {
@@ -56,12 +68,20 @@ export default async function OfertePage({
     .select('id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent')
     .eq('status', 'active')
     .eq('moderation', 'approved')
-    .order('score', { ascending: false })
+    .order(sort.column, { ascending: sort.ascending, nullsFirst: false })
     .limit(500);
   if (modelFilter && modelFilter !== 'TOATE') query = query.eq('model_code', modelFilter);
+  if (pretMax) query = query.lte('price', pretMax);
+  if (taraFilter) query = query.eq('country', taraFilter);
 
-  const { data } = await query;
+  // Țările disponibile pentru filtru — din toate ofertele active, nu doar cele
+  // deja filtrate (altfel filtrul s-ar restrânge singur după prima aplicare).
+  const [{ data }, { data: countryRows }] = await Promise.all([
+    query,
+    supabase.from('offers').select('country').eq('status', 'active').eq('moderation', 'approved').limit(1000),
+  ]);
   const offers = (data ?? []) as OfferRow[];
+  const countries = [...new Set((countryRows ?? []).map((r) => r.country).filter(Boolean))].sort();
 
   const byModel = new Map<string, OfferRow[]>();
   offers.forEach((o) => {
@@ -104,6 +124,43 @@ export default async function OfertePage({
           </Link>
         ))}
       </div>
+
+      {/* Filtrare server-side prin GET — funcționează și fără JavaScript. */}
+      <form method="get" action="/oferte" className="toolbar">
+        {modelFilter && <input type="hidden" name="model" value={modelFilter} />}
+        <input
+          type="number"
+          name="pret_max"
+          placeholder="Preț maxim (€)"
+          min={0}
+          step={500}
+          defaultValue={pretMax ?? ''}
+          aria-label="Preț maxim în euro"
+        />
+        <select name="tara" defaultValue={taraFilter ?? ''} aria-label="Filtrează după țară">
+          <option value="">Toate țările</option>
+          {countries.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <select name="sort" defaultValue={sortKey} aria-label="Sortare">
+          {Object.entries(SORTS).map(([key, s]) => (
+            <option key={key} value={key}>
+              {s.label}
+            </option>
+          ))}
+        </select>
+        <button type="submit" className="btn dark">
+          Filtrează
+        </button>
+      </form>
+      {(pretMax || taraFilter || sortKey !== 'scor') && (
+        <p className="meta mono" style={{ marginBottom: 12 }}>
+          <Link href={modelFilter ? `/oferte?model=${modelFilter}` : '/oferte'}>× Resetează filtrele</Link>
+        </p>
+      )}
 
       {!offers.length && (
         <div className="empty">

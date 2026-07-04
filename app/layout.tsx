@@ -1,5 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Archivo, IBM_Plex_Mono } from 'next/font/google';
+import { Analytics } from '@vercel/analytics/react';
+import { SpeedInsights } from '@vercel/speed-insights/next';
 import SiteHeader from '@/components/SiteHeader';
 import SiteFooter from '@/components/SiteFooter';
 import ConsentDefaultScript from '@/components/ConsentDefaultScript';
@@ -64,6 +66,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SiteFooter />
         <CookieConsentBanner />
         <AdSenseLoader />
+        {/* Analytics Vercel: cookieless/anonim (nu cade sub consimțământul de
+            publicitate GDPR-03) — măsoară trafic + Web Vitals reale. */}
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );

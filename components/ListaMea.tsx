@@ -11,6 +11,7 @@ import {
 import {
   addWatchlistItem, updateCriterion, updateStatus, updateCond, addPriceUpdate, deleteWatchlistItem,
 } from '@/app/(with-sidebar)/cont/lista/actions';
+import PriceSparkline from '@/components/PriceSparkline';
 
 export interface WatchlistItem {
   id: string;
@@ -288,8 +289,11 @@ export default function ListaMea({ models, items }: Props) {
             </div>
 
             {l.price_history.length > 1 && (
-              <div className="hist">
-                istoric preț: {l.price_history.map((h) => `${fmt(h.price)}€ (${new Date(h.at).toLocaleDateString('ro-RO')})`).join(' → ')}
+              <div className="hist" style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+                <PriceSparkline history={l.price_history} />
+                <span>
+                  istoric preț: {l.price_history.map((h) => `${fmt(h.price)}€ (${new Date(h.at).toLocaleDateString('ro-RO')})`).join(' → ')}
+                </span>
               </div>
             )}
             {l.note && <div style={{ fontSize: 14, color: 'var(--inksoft)', marginTop: 6 }}>{l.note}</div>}
