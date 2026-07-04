@@ -28,7 +28,7 @@ Regulă de arbitraj: la conflict, v5 prevalează pentru conținut/design, caietu
 ## Reguli stricte (nu se negociază)
 1. **Fără secrete în repo.** Totul prin variabile de mediu (`.env.example` e șablonul). Nu hardcoda emailuri personale, chei, ID-uri Stripe.
 2. **Fără scraping împotriva ToS.** Conectoarele de surse se implementează doar cu bază legală documentată (caiet, secțiunile 4.2 și 8). Până atunci: link-out + import asistat + anunțuri native.
-3. **Fără fotografii preluate din anunțurile terților.** Doar date factuale + link către sursă. Identitatea vizuală = blueprint-urile SVG proprii din v5.
+3. **Fără fotografii preluate din anunțurile terților** (offers/anunțuri de vânzare) — doar date factuale + link către sursă; blueprint-urile SVG proprii rămân identitatea vizuală tehnică. Excepție distinctă, aprobată explicit de beneficiar: fotografii ilustrative per **model** (nu per anunț) pe homepage, din Wikimedia Commons cu licență liberă (CC BY/BY-SA/domeniu public) — vezi `lib/model-photos.ts` (atribuire obligatorie sub fiecare imagine, cu excepția domeniului public).
 4. **Securitate reală, nu decorativă:** RLS pe toate datele de utilizator (testul user-A-nu-vede-user-B e obligatoriu), MFA prin Supabase (nu criptografie proprie), validare server-side cu zod, sanitizare la afișare.
 5. **GDPR:** export date, ștergere cont, consimțământ cookie (Consent Mode v2) — cerințe de lansare, nu „nice to have".
 

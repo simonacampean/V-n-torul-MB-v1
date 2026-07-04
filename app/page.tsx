@@ -1,5 +1,6 @@
 import Blueprint from '@/components/Blueprint';
 import AdSlot from '@/components/AdSlot';
+import ModelPhoto from '@/components/ModelPhoto';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
@@ -22,6 +23,8 @@ export default async function Home() {
             <div key={m.code}>
               {i === 2 && <AdSlot position="infeed" />}
             <article className="card">
+              <ModelPhoto code={m.code} alt={`${m.name} — fotografie de referință`} />
+
               <div className="row">
                 <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
                   <span className="plate">{m.code}</span>

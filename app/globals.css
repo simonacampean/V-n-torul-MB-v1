@@ -211,6 +211,18 @@ main { padding: 18px 0 10px; }
 .intro { font-size: 14px; line-height: 1.55; color: var(--inksoft); margin-bottom: 18px; max-width: 760px; }
 .intro b { color: var(--ink); }
 
+/* ===== Fotografie model (homepage) — Wikimedia Commons, licențe libere ===== */
+.model-photo { margin-bottom: 14px; }
+.model-photo img {
+  border: 1px solid var(--line); border-radius: var(--radius);
+  aspect-ratio: 16 / 9; object-fit: cover; background: var(--paper);
+}
+.model-photo-credit {
+  font-size: 10px; color: var(--plateedge); margin-top: 4px; text-align: right;
+}
+.model-photo-credit a { color: var(--plateedge); }
+.model-photo-credit a:hover { color: var(--red); }
+
 footer.site { padding: 14px 0 calc(env(safe-area-inset-bottom, 0px) + 24px); }
 footer.site .in {
   font-family: var(--font-mono); font-size: 11px; color: var(--plateedge);
