@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTargetModels } from '@/lib/models';
 import { getPlatforms, groupPlatforms, buildHuntUrl, GROUP_META, NEG_LABEL } from '@/lib/hunt';
+import OpenAllButton from '@/components/OpenAllButton';
 import { markHuntDone } from './actions';
 
 const NEG_CLASS: Record<string, string> = { DA: 'da', PARTIAL: 'part', NU: 'nu', REF: 'ref' };
@@ -65,9 +66,16 @@ export default async function VanatoareZilnicaPage({
         ))}
       </div>
 
-      {groups.map((g) => (
+      {groups.map((g) => {
+        const urls = g.items.map((p) => buildHuntUrl(p, activeModel)).filter((u): u is string => Boolean(u));
+        return (
         <div key={g.grp} style={{ marginBottom: 20 }}>
-          <div className="seclabel">▸ {GROUP_META[g.grp].label}</div>
+          <div className="lrow" style={{ marginTop: 0, justifyContent: 'space-between' }}>
+            <div className="seclabel" style={{ margin: 0 }}>▸ {GROUP_META[g.grp].label}</div>
+            {g.grp === 'major' && urls.length > 1 && (
+              <OpenAllButton urls={urls} label={`Deschide toate (${urls.length}) →`} />
+            )}
+          </div>
           {GROUP_META[g.grp].note && <div className="gnote">{GROUP_META[g.grp].note}</div>}
           <div className="grid3">
             {g.items.map((p) => {
@@ -86,7 +94,8 @@ export default async function VanatoareZilnicaPage({
             })}
           </div>
         </div>
-      ))}
+        );
+      })}
 
     </div>
   );

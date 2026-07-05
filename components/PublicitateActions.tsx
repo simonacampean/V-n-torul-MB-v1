@@ -24,7 +24,7 @@ export default function PublicitateActions({ campaignId, active }: { campaignId:
   return (
     <div className="lrow">
       <button type="button" className="btn" onClick={() => handle(() => toggleCampaign(campaignId, !active))} disabled={busy}>
-        {active ? 'Dezactivează' : 'Activează'}
+        {busy ? 'Se salvează…' : active ? 'Dezactivează' : 'Activează'}
       </button>
       <button
         type="button"
@@ -34,7 +34,7 @@ export default function PublicitateActions({ campaignId, active }: { campaignId:
         }}
         disabled={busy}
       >
-        Șterge
+        {busy ? 'Se șterge…' : 'Șterge'}
       </button>
       {error && (
         <span role="alert" style={{ color: '#c0392b', fontSize: 12 }}>

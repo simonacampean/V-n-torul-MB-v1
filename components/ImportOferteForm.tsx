@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { importOffersReport } from '@/app/(with-sidebar)/cont/oferte/actions';
+import Icon from '@/components/Icon';
 
 export default function ImportOferteForm() {
   const router = useRouter();
@@ -45,7 +46,7 @@ export default function ImportOferteForm() {
       />
       <div className="btnrow">
         <button type="button" className="btn dark" onClick={handleImport} disabled={busy || !text.trim()}>
-          ⭳ Importă raportul
+          {busy ? 'Se importă…' : (<><Icon name="download" /> Importă raportul</>)}
         </button>
       </div>
       {message && (

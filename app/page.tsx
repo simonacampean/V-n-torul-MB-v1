@@ -1,6 +1,8 @@
 import Blueprint from '@/components/Blueprint';
 import AdSlot from '@/components/AdSlot';
 import ModelPhoto from '@/components/ModelPhoto';
+import Icon from '@/components/Icon';
+import CommunityStats from '@/components/CommunityStats';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
@@ -22,6 +24,7 @@ export default async function Home() {
             Șase ținte selectate pe criterii de investiție. Regula de aur:{' '}
             <b>cel mai bun exemplar dintr-un model accesibil</b>.
           </p>
+          <CommunityStats />
 
           {models.map((m, i) => (
             <div key={m.code}>
@@ -53,7 +56,7 @@ export default async function Home() {
                 </span>
                 <Blueprint body={m.body} />
                 <a className="gal" href={galleryUrl(m)} target="_blank" rel="noopener noreferrer">
-                  📷 Galerie foto →
+                  <Icon name="camera" /> Galerie foto →
                 </a>
               </div>
 

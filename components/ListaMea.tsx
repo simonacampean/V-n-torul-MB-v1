@@ -12,6 +12,7 @@ import {
   addWatchlistItem, updateCriterion, updateStatus, updateCond, addPriceUpdate, deleteWatchlistItem,
 } from '@/app/(with-sidebar)/cont/lista/actions';
 import PriceSparkline from '@/components/PriceSparkline';
+import Icon from '@/components/Icon';
 
 export interface WatchlistItem {
   id: string;
@@ -54,6 +55,12 @@ export default function ListaMea({ models, items }: Props) {
   const [cmp, setCmp] = useState<string[]>([]);
   const [showCmp, setShowCmp] = useState(false);
 
+  // Preț nou / ștergere — confirmări inline, nu window.prompt/confirm (nestilizate,
+  // fără undo, rup consistența vizuală exact la acțiunile unde încrederea contează).
+  const [priceEditId, setPriceEditId] = useState<string | null>(null);
+  const [priceEditValue, setPriceEditValue] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
   const formVerdict = verdictOf(bandOf[form.model_code] ?? null, parsePrice(form.price), form.cond);
 
   async function refresh() {
@@ -91,14 +98,27 @@ export default function ListaMea({ models, items }: Props) {
     await updateCond(itemId, cond);
     await refresh();
   }
-  async function handlePriceUpdate(itemId: string, current: number | null) {
-    const v = window.prompt('Prețul actual din anunț (€):', current != null ? String(current) : '');
-    if (v == null) return;
-    await addPriceUpdate(itemId, v);
+  function startPriceEdit(itemId: string, current: number | null) {
+    setPriceEditId(itemId);
+    setPriceEditValue(current != null ? String(current) : '');
+  }
+  function cancelPriceEdit() {
+    setPriceEditId(null);
+    setPriceEditValue('');
+  }
+  async function confirmPriceEdit(itemId: string) {
+    if (!priceEditValue.trim()) return;
+    await addPriceUpdate(itemId, priceEditValue);
+    setPriceEditId(null);
+    setPriceEditValue('');
     await refresh();
   }
   async function handleDelete(itemId: string) {
-    if (!window.confirm('Ștergi acest anunț din Lista mea?')) return;
+    if (confirmDeleteId !== itemId) {
+      setConfirmDeleteId(itemId);
+      return;
+    }
+    setConfirmDeleteId(null);
     await deleteWatchlistItem(itemId);
     setCmp((c) => c.filter((id) => id !== itemId));
     await refresh();
@@ -210,7 +230,10 @@ export default function ListaMea({ models, items }: Props) {
         ▸ Anunțuri urmărite ({items.length})
       </div>
       <div className="toolbar">
-        <input placeholder="🔍 Caută în listă..." value={q} onChange={(e) => setQ(e.target.value)} />
+        <span className="search-box">
+          <Icon name="search" />
+          <input placeholder="Caută în listă..." value={q} onChange={(e) => setQ(e.target.value)} />
+        </span>
         <select value={fModel} onChange={(e) => setFModel(e.target.value)}>
           <option value="TOATE">Toate modelele</option>
           {models.map((m) => (
@@ -240,6 +263,7 @@ export default function ListaMea({ models, items }: Props) {
 
       {list.map((l) => {
         const score = scoreWatchlistItem(l.criteria);
+        const checkedCount = CRITERIA.filter((c) => l.criteria?.[c.id]).length;
         const pVal = currentPrice(l.price_history, l.price);
         const pv = verdictOf(bandOf[l.model_code] ?? null, pVal, l.cond);
         const isChilipir = pv?.key === 'CHILIPIR';
@@ -307,6 +331,14 @@ export default function ListaMea({ models, items }: Props) {
             )}
             {l.note && <div style={{ fontSize: 14, color: 'var(--inksoft)', marginTop: 6 }}>{l.note}</div>}
 
+            <div className="lrow" style={{ marginTop: 10, marginBottom: -4 }}>
+              <span className="meta mono">
+                {checkedCount}/{CRITERIA.length} criterii completate
+              </span>
+              <span className="crit-progress">
+                <span className="crit-progress-fill" style={{ width: `${(checkedCount / CRITERIA.length) * 100}%` }} />
+              </span>
+            </div>
             <div className="crit">
               {CRITERIA.map((c) => (
                 <label key={c.id}>
@@ -337,9 +369,28 @@ export default function ListaMea({ models, items }: Props) {
                   </option>
                 ))}
               </select>
-              <button type="button" className="btn" onClick={() => handlePriceUpdate(l.id, pVal)}>
-                💶 Preț nou
-              </button>
+              {priceEditId === l.id ? (
+                <span className="inline-edit">
+                  <input
+                    inputMode="numeric"
+                    autoFocus
+                    placeholder="Preț nou (€)"
+                    value={priceEditValue}
+                    onChange={(e) => setPriceEditValue(e.target.value)}
+                    style={{ width: 120, display: 'inline-block', marginTop: 0 }}
+                  />
+                  <button type="button" className="btn dark" onClick={() => confirmPriceEdit(l.id)}>
+                    Salvează
+                  </button>
+                  <button type="button" className="btn" onClick={cancelPriceEdit}>
+                    Anulează
+                  </button>
+                </span>
+              ) : (
+                <button type="button" className="btn" onClick={() => startPriceEdit(l.id, pVal)}>
+                  Preț nou
+                </button>
+              )}
               <label className="cmpchk">
                 <input
                   type="checkbox"
@@ -349,9 +400,21 @@ export default function ListaMea({ models, items }: Props) {
                 compară
               </label>
               {score >= CANDIDATE_THRESHOLD && <span className="candidate">★ CANDIDAT</span>}
-              <button type="button" className="btn del" onClick={() => handleDelete(l.id)}>
-                Șterge
-              </button>
+              {confirmDeleteId === l.id ? (
+                <span className="inline-edit">
+                  <span className="meta mono" style={{ color: 'var(--red)' }}>Sigur?</span>
+                  <button type="button" className="btn del" onClick={() => handleDelete(l.id)}>
+                    Confirmă ștergerea
+                  </button>
+                  <button type="button" className="btn" onClick={() => setConfirmDeleteId(null)}>
+                    Anulează
+                  </button>
+                </span>
+              ) : (
+                <button type="button" className="btn del" onClick={() => handleDelete(l.id)}>
+                  Șterge
+                </button>
+              )}
             </div>
           </article>
         );

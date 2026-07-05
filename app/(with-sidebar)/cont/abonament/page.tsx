@@ -1,6 +1,31 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { CheckoutButton, PortalButton } from '@/components/AbonamentActions';
+import { getStripe, priceIdForPlan, type BillingPlan } from '@/lib/stripe';
+import { trackEvent } from '@/lib/track';
+
+/** P2/claritate — prețul trebuie vizibil înainte de a intra în checkout-ul Stripe, nu doar acolo. */
+async function loadPrices(): Promise<Partial<Record<BillingPlan, string>>> {
+  try {
+    const stripe = getStripe();
+    const [monthly, yearly] = await Promise.all([
+      stripe.prices.retrieve(priceIdForPlan('monthly')),
+      stripe.prices.retrieve(priceIdForPlan('yearly')),
+    ]);
+    const fmt = (p: typeof monthly) =>
+      p.unit_amount != null
+        ? `${(p.unit_amount / 100).toLocaleString('ro-RO', { maximumFractionDigits: 2 })} ${p.currency.toUpperCase()}`
+        : undefined;
+    const result: Partial<Record<BillingPlan, string>> = {};
+    const m = fmt(monthly);
+    const y = fmt(yearly);
+    if (m) result.monthly = m;
+    if (y) result.yearly = y;
+    return result;
+  } catch {
+    return {}; // Stripe neconfigurat — butoanele rămân fără preț afișat, nu blochează pagina.
+  }
+}
 
 const STATUS_LABEL: Record<string, string> = {
   active: 'Activ',
@@ -37,6 +62,9 @@ export default async function AbonamentPage({
     .maybeSingle();
 
   const isActive = sub?.status === 'active' || sub?.status === 'trialing';
+  const prices = isActive ? {} : await loadPrices();
+  if (checkout === 'success') await trackEvent('checkout_success');
+  if (checkout === 'cancel') await trackEvent('checkout_cancel');
 
   return (
     <div>
@@ -85,8 +113,14 @@ export default async function AbonamentPage({
         <div className="card flat" style={{ marginTop: 16 }}>
           <div className="seclabel">▸ Premium: alerte instant, agent zilnic personalizat, istoric extins</div>
           <div className="btnrow">
-            <CheckoutButton plan="monthly" label="Abonează-te lunar" />
-            <CheckoutButton plan="yearly" label="Abonează-te anual" />
+            <CheckoutButton
+              plan="monthly"
+              label={prices.monthly ? `Abonează-te lunar — ${prices.monthly}/lună` : 'Abonează-te lunar'}
+            />
+            <CheckoutButton
+              plan="yearly"
+              label={prices.yearly ? `Abonează-te anual — ${prices.yearly}/an` : 'Abonează-te anual'}
+            />
           </div>
         </div>
       )}

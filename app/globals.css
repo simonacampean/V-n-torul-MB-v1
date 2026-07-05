@@ -46,6 +46,14 @@ body {
   align-items: center;
 }
 .cont-sidebar nav a.on { background: var(--ink); color: var(--panel); }
+
+/* Separator vizual admin — evită confuzia între zona de user și cea de administrare. */
+.cont-sidebar-section {
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--red);
+  margin: 14px 0 4px; padding-top: 10px; border-top: 1px dashed var(--line);
+}
+.cont-sidebar nav a.admin { color: var(--red); }
+.cont-sidebar nav a.on.admin { background: var(--red); color: #fff; }
 .cont-content { flex: 1; min-width: 0; }
 @media (max-width: 720px) {
   .cont-layout { flex-direction: column; }
@@ -299,6 +307,9 @@ footer.site .in {
 .toolbar { display: grid; grid-template-columns: 1fr auto auto auto; gap: 8px; margin-bottom: 14px; }
 @media (max-width: 720px) { .toolbar { grid-template-columns: 1fr 1fr; } }
 .toolbar input, .toolbar select { font-size: 13px; padding: 9px 10px; }
+.search-box { position: relative; display: block; }
+.search-box svg { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--inksoft); pointer-events: none; }
+.search-box input { padding-left: 30px; }
 
 .chip { font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 2px; border: 1px solid var(--linesoft); }
 .chip.chilipir { background: var(--red); color: #fff; border-color: var(--red); }
@@ -307,6 +318,9 @@ footer.site .in {
 .score { font-family: var(--font-mono); font-size: 19px; font-weight: 600; }
 .score small { font-size: 11px; color: var(--inksoft); }
 
+/* Progres criterii (Zeigarnik) — tensiunea sarcinii neterminate încurajează completarea. */
+.crit-progress { display: inline-block; width: 80px; height: 6px; background: var(--linesoft); border-radius: 3px; overflow: hidden; }
+.crit-progress-fill { display: block; height: 100%; background: var(--green); border-radius: 3px; transition: width 0.2s ease; }
 .crit { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 16px; border-top: 1px dashed var(--linesoft); margin-top: 12px; padding-top: 10px; }
 @media (max-width: 640px) { .crit { grid-template-columns: 1fr; } }
 .crit label { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--inksoft); cursor: pointer; min-height: 28px; margin-top: 0; }
@@ -314,6 +328,8 @@ footer.site .in {
 .crit .w { font-family: var(--font-mono); color: var(--line); }
 
 .lrow { display: flex; align-items: center; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+/* Confirmări inline (preț nou / ștergere) — înlocuiesc window.prompt/confirm native. */
+.inline-edit { display: flex; align-items: center; gap: 6px; }
 .lrow select { width: auto; font-size: 12px; padding: 8px; margin-top: 0; }
 .candidate { font-family: var(--font-mono); font-size: 11px; padding: 4px 8px; background: #E4F0EA; color: var(--green); border-radius: 2px; }
 .hist { font-family: var(--font-mono); font-size: 10px; color: var(--inksoft); margin-top: 4px; }

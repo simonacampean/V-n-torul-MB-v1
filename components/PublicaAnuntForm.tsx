@@ -43,17 +43,40 @@ export default function PublicaAnuntForm({ models }: { models: TargetModel[] }) 
             </option>
           ))}
         </select>
-        <input name="title" placeholder="Titlu (ex: 300CE-24, Almandinrot, 138.000 km)" required />
-        <input name="price" placeholder="Preț (€)" inputMode="numeric" required />
-        <input name="url" placeholder="Link anunț (opțional)" />
-        <input name="year" placeholder="An fabricație" inputMode="numeric" />
-        <input name="km" placeholder="Kilometraj" inputMode="numeric" />
+        <input name="title" placeholder="Titlu (ex: 300CE-24, Almandinrot, 138.000 km)" required minLength={3} title="Minim 3 caractere." />
+        <input
+          name="price"
+          placeholder="Preț (€)"
+          inputMode="numeric"
+          pattern="[0-9]{3,7}"
+          title="Doar cifre, fără puncte sau spații (ex: 12000)."
+          required
+        />
+        <input name="url" placeholder="Link anunț (opțional)" type="url" title="Adresă completă, ex: https://..." />
+        <input
+          name="year"
+          placeholder="An fabricație"
+          inputMode="numeric"
+          pattern="19[5-9][0-9]|20[0-2][0-9]"
+          maxLength={4}
+          title="An între 1950 și 2029."
+        />
+        <input name="km" placeholder="Kilometraj" inputMode="numeric" pattern="[0-9]{1,7}" title="Doar cifre." />
         <select name="options" defaultValue="standard">
           <option value="full">Full options</option>
           <option value="partial">Dotări parțiale</option>
           <option value="standard">Standard</option>
         </select>
-        <input name="country" placeholder="Țară (ex: RO, DE)" defaultValue="RO" required />
+        <input
+          name="country"
+          placeholder="Țară (ex: RO, DE)"
+          defaultValue="RO"
+          required
+          maxLength={2}
+          pattern="[A-Za-z]{2}"
+          title="Cod de țară din 2 litere, ex: RO, DE."
+          style={{ textTransform: 'uppercase' }}
+        />
         <input name="note" placeholder="Note" style={{ gridColumn: '1/-1' }} />
       </div>
       {error && (
@@ -64,7 +87,7 @@ export default function PublicaAnuntForm({ models }: { models: TargetModel[] }) 
       {message && <p style={{ marginTop: 8, color: 'var(--green)' }}>{message}</p>}
       <div className="btnrow">
         <button type="submit" className="btn dark" disabled={busy}>
-          + Publică anunțul
+          {busy ? 'Se trimite…' : '+ Publică anunțul'}
         </button>
       </div>
     </form>

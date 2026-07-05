@@ -6,14 +6,15 @@ import { moderateOffer } from '@/app/(with-sidebar)/admin/oferte/actions';
 
 export default function ModerareOferta({ offerId }: { offerId: string }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'approved' | 'rejected' | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const busy = pendingAction !== null;
 
   async function handle(decision: 'approved' | 'rejected') {
-    setBusy(true);
+    setPendingAction(decision);
     setError(null);
     const result = await moderateOffer(offerId, decision);
-    setBusy(false);
+    setPendingAction(null);
     if ('error' in result) {
       setError(result.error);
       return;
@@ -24,10 +25,10 @@ export default function ModerareOferta({ offerId }: { offerId: string }) {
   return (
     <div className="lrow">
       <button type="button" className="btn ok" onClick={() => handle('approved')} disabled={busy}>
-        ✓ Aprobă
+        {pendingAction === 'approved' ? 'Se aprobă…' : '✓ Aprobă'}
       </button>
       <button type="button" className="btn del" onClick={() => handle('rejected')} disabled={busy}>
-        Respinge
+        {pendingAction === 'rejected' ? 'Se respinge…' : 'Respinge'}
       </button>
       {error && (
         <span role="alert" style={{ color: '#c0392b', fontSize: 12 }}>

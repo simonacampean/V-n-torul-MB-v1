@@ -25,7 +25,7 @@ export default function DeleteModelButton({ code }: { code: string }) {
   return (
     <div className="lrow">
       <button type="button" className="btn del" onClick={handle} disabled={busy}>
-        Șterge modelul
+        {busy ? 'Se șterge…' : 'Șterge modelul'}
       </button>
       {error && (
         <span role="alert" style={{ color: 'var(--red)', fontSize: 12 }}>

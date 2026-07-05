@@ -8,6 +8,7 @@ import { getTargetModels } from '@/lib/models';
 import { parsePrice } from '@/lib/scoring';
 import { extractAgentReport, validateOffers, planOfferImport } from '@/lib/offers';
 import { applyImportPlan } from '@/lib/server/offers-import';
+import { trackEvent } from '@/lib/track';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -80,10 +81,16 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
     country: formData.get('country'),
     note: formData.get('note'),
   });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (!parsed.success) {
+    await trackEvent('form_error', { action: 'submit_native_offer', message: parsed.error.issues[0].message });
+    return { error: parsed.error.issues[0].message };
+  }
 
   const price = parsePrice(parsed.data.price);
-  if (price == null) return { error: 'Preț invalid.' };
+  if (price == null) {
+    await trackEvent('form_error', { action: 'submit_native_offer', message: 'Preț invalid.' });
+    return { error: 'Preț invalid.' };
+  }
 
   const supabase = await createClient();
   const {
@@ -105,8 +112,12 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
     submitted_by: user.id,
     moderation: 'pending',
   });
-  if (error) return { error: error.message };
+  if (error) {
+    await trackEvent('form_error', { action: 'submit_native_offer', message: error.message });
+    return { error: error.message };
+  }
 
+  await trackEvent('native_offer_submitted', { model_code: parsed.data.model_code });
   revalidatePath('/cont/oferte/publica');
   return { ok: true };
 }

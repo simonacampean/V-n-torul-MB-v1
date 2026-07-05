@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
+import SubmitButton from '@/components/SubmitButton';
+import ConnectorTypeField from '@/components/ConnectorTypeField';
 import { createPlatform } from './actions';
 
 export default async function AdminPlatformePage({
@@ -45,11 +47,19 @@ export default async function AdminPlatformePage({
       <form action={createPlatform} className="card formgrid">
         <div>
           <label htmlFor="name">Nume</label>
-          <input id="name" name="name" required />
+          <input id="name" name="name" required minLength={2} />
         </div>
         <div>
           <label htmlFor="country">Țară (cod, ex.: DE)</label>
-          <input id="country" name="country" maxLength={2} required />
+          <input
+            id="country"
+            name="country"
+            maxLength={2}
+            pattern="[A-Za-z]{2}"
+            title="Cod de țară din 2 litere, ex: RO, DE."
+            style={{ textTransform: 'uppercase' }}
+            required
+          />
         </div>
         <div>
           <label htmlFor="grp">Grup</label>
@@ -68,19 +78,7 @@ export default async function AdminPlatformePage({
             <option value="REF">REF</option>
           </select>
         </div>
-        <div>
-          <label htmlFor="connector_type">Tip conector</label>
-          <select id="connector_type" name="connector_type" defaultValue="manual">
-            <option value="manual">Manual (import asistat)</option>
-            <option value="native">Nativ (anunțuri proprii)</option>
-            <option value="api">API</option>
-            <option value="affiliate">Afiliere</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="legal_basis">Bază legală (obligatoriu pt. api/afiliere)</label>
-          <input id="legal_basis" name="legal_basis" placeholder="ex.: acord de parteneriat semnat 2026-01" />
-        </div>
+        <ConnectorTypeField />
         <div style={{ gridColumn: '1 / -1' }}>
           <label htmlFor="url_template">Șablon URL căutare ({'{query}'}, {'{yearFrom}'}, {'{yearTo}'})</label>
           <input id="url_template" name="url_template" />
@@ -94,9 +92,7 @@ export default async function AdminPlatformePage({
           <span>Activă</span>
         </label>
         <div style={{ gridColumn: '1 / -1' }}>
-          <button type="submit" className="btn primary">
-            Adaugă platformă
-          </button>
+          <SubmitButton pendingLabel="Se adaugă…">Adaugă platformă</SubmitButton>
         </div>
       </form>
 

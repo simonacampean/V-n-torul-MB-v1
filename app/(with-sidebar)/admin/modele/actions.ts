@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 import type { User } from '@supabase/supabase-js';
 import { createClient } from '@/lib/supabase/server';
 import { logAudit } from '@/lib/audit';
+import { trackEvent } from '@/lib/track';
 
 type AdminCheck = { error: string } | { supabase: Awaited<ReturnType<typeof createClient>>; user: User };
 
@@ -86,7 +87,10 @@ export async function createModel(formData: FormData): Promise<void> {
   if ('error' in check) redirect(`/admin/modele?err=${encodeURIComponent(check.error)}`);
 
   const parsed = createModelSchema.safeParse({ ...readModelFields(formData), code: formData.get('code') });
-  if (!parsed.success) redirect(`/admin/modele?err=${encodeURIComponent(parsed.error.issues[0].message)}`);
+  if (!parsed.success) {
+    await trackEvent('form_error', { action: 'create_model', message: parsed.error.issues[0].message });
+    redirect(`/admin/modele?err=${encodeURIComponent(parsed.error.issues[0].message)}`);
+  }
 
   const { error } = await check.supabase.from('target_models').insert({
     code: parsed.data.code,
@@ -106,7 +110,10 @@ export async function createModel(formData: FormData): Promise<void> {
     prod_note: parsed.data.prod_note || null,
     active: parsed.data.active === 'on',
   });
-  if (error) redirect(`/admin/modele?err=${encodeURIComponent(error.message)}`);
+  if (error) {
+    await trackEvent('form_error', { action: 'create_model', message: error.message });
+    redirect(`/admin/modele?err=${encodeURIComponent(error.message)}`);
+  }
 
   await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'create_model', code: parsed.data.code } });
   revalidatePath('/admin/modele');

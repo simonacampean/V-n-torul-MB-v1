@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PublicitateActions from '@/components/PublicitateActions';
+import SubmitButton from '@/components/SubmitButton';
 import { createCampaign } from './actions';
 
 export default async function AdminPublicitatePage({
@@ -80,9 +81,7 @@ export default async function AdminPublicitatePage({
           <input id="ends_at" name="ends_at" type="date" />
         </div>
         <div style={{ gridColumn: '1 / -1' }}>
-          <button type="submit" className="btn primary">
-            Adaugă campanie
-          </button>
+          <SubmitButton pendingLabel="Se adaugă…">Adaugă campanie</SubmitButton>
         </div>
       </form>
 

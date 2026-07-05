@@ -8,6 +8,7 @@ import {
   CANDIDATE_THRESHOLD,
   type WatchlistCriteria, type PriceHistoryEntry,
 } from '@/lib/scoring';
+import { computeStreak } from '@/lib/streak';
 import AdSlot from '@/components/AdSlot';
 
 export default async function ContPage() {
@@ -50,7 +51,9 @@ export default async function ContPage() {
   }).length;
 
   const log: string[] = Array.isArray(prefs?.daily_hunt_log) ? prefs.daily_hunt_log : [];
-  const huntedToday = log.includes(new Date().toISOString().slice(0, 10));
+  const todayIso = new Date().toISOString().slice(0, 10);
+  const huntedToday = log.includes(todayIso);
+  const streak = computeStreak(log, todayIso);
 
   return (
     <div>
@@ -58,13 +61,25 @@ export default async function ContPage() {
       <h1 className="page-title">Contul meu</h1>
       <p className="meta mono" style={{ marginTop: 8 }}>{user.email}</p>
 
+      {streak > 0 && (
+        <p className="meta mono" style={{ marginTop: 6, color: 'var(--red)' }}>
+          🔥 {streak} {streak === 1 ? 'zi la rând' : 'zile la rând'} de vânătoare
+        </p>
+      )}
+
       {watchlist.length === 0 && (
         <div className="onb" style={{ marginTop: 16 }}>
-          <b>Bine ai venit, vânătorule.</b> Traseul: ① alege modelul care-ți place din{' '}
-          <Link href="/">Modele țintă</Link> (apasă „Galerie foto”) → ② deschide căutările din{' '}
-          <Link href="/cont/vanatoare">Vânătoare zilnică</Link> → ③ salvează candidații în{' '}
-          <Link href="/cont/lista">Lista mea</Link> — evaluatorul te anunță automat când prinzi un
-          chilipir.
+          <b>Bine ai venit, vânătorule.</b> Traseul de pornire — {(huntedToday ? 1 : 0)}/2 pași făcuți:
+          <ul style={{ marginTop: 8, paddingLeft: 20 }}>
+            <li>
+              {huntedToday ? '✓' : '○'} Alege un model din <Link href="/">Modele țintă</Link> și deschide
+              căutările din <Link href="/cont/vanatoare">Vânătoare zilnică</Link>
+            </li>
+            <li>
+              ○ Salvează primul candidat în <Link href="/cont/lista">Lista mea</Link> — evaluatorul te
+              anunță automat când prinzi un chilipir
+            </li>
+          </ul>
         </div>
       )}
 

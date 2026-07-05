@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect, notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import DeleteModelButton from '@/components/DeleteModelButton';
+import ModelForm from '@/components/ModelForm';
 import { updateModel } from '../actions';
 
 export default async function AdminModelEditPage({
@@ -44,77 +45,28 @@ export default async function AdminModelEditPage({
       {err && <div className="agentmsg err" style={{ marginTop: 16 }}>{err}</div>}
       {ok && <div className="agentmsg ok" style={{ marginTop: 16 }}>Salvat cu succes.</div>}
 
-      <form action={updateModelWithCode} className="card formgrid" style={{ marginTop: 16 }}>
-        <div>
-          <label htmlFor="name">Nume complet</label>
-          <input id="name" name="name" defaultValue={model.name} required />
-        </div>
-        <div>
-          <label htmlFor="years">Perioadă</label>
-          <input id="years" name="years" defaultValue={model.years} required />
-        </div>
-        <div>
-          <label htmlFor="body">Caroserie</label>
-          <select id="body" name="body" defaultValue={model.body}>
-            <option value="sedan">Sedan</option>
-            <option value="coupe">Coupé</option>
-            <option value="roadster">Roadster</option>
-          </select>
-        </div>
-        <div>
-          <label htmlFor="year_from">An început</label>
-          <input id="year_from" name="year_from" type="number" defaultValue={model.year_from} required />
-        </div>
-        <div>
-          <label htmlFor="year_to">An sfârșit</label>
-          <input id="year_to" name="year_to" type="number" defaultValue={model.year_to} required />
-        </div>
-        <div>
-          <label htmlFor="band_lo">Bandă preț — minim (€)</label>
-          <input id="band_lo" name="band_lo" type="number" defaultValue={model.band_lo} required />
-        </div>
-        <div>
-          <label htmlFor="band_hi">Bandă preț — maxim (€)</label>
-          <input id="band_hi" name="band_hi" type="number" defaultValue={model.band_hi} required />
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label htmlFor="thesis">Teza de investiție</label>
-          <textarea id="thesis" name="thesis" rows={3} defaultValue={model.thesis} required />
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label htmlFor="checklist">Checklist inspecție (câte un punct pe linie)</label>
-          <textarea id="checklist" name="checklist" rows={4} defaultValue={(model.checklist ?? []).join('\n')} />
-        </div>
-        <div>
-          <label htmlFor="tags">Etichete (separate prin virgulă)</label>
-          <input id="tags" name="tags" defaultValue={(model.tags ?? []).join(', ')} />
-        </div>
-        <div>
-          <label htmlFor="gallery_query">Interogare galerie foto</label>
-          <input id="gallery_query" name="gallery_query" defaultValue={model.gallery_query} required />
-        </div>
-        <div>
-          <label htmlFor="hunt_query">Interogare căutare (F-02)</label>
-          <input id="hunt_query" name="hunt_query" defaultValue={model.hunt_query} required />
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label htmlFor="verdict">Verdict</label>
-          <input id="verdict" name="verdict" defaultValue={model.verdict} required />
-        </div>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <label htmlFor="prod_note">Notă producție (opțional)</label>
-          <input id="prod_note" name="prod_note" defaultValue={model.prod_note ?? ''} />
-        </div>
-        <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <input type="checkbox" name="active" defaultChecked={model.active} style={{ width: 'auto' }} />
-          <span>Activ (vizibil public)</span>
-        </label>
-        <div style={{ gridColumn: '1 / -1' }}>
-          <button type="submit" className="btn primary">
-            Salvează modificările
-          </button>
-        </div>
-      </form>
+      <ModelForm
+        mode="edit"
+        action={updateModelWithCode}
+        submitLabel="Salvează modificările"
+        initial={{
+          name: model.name,
+          years: model.years,
+          body: model.body,
+          year_from: model.year_from,
+          year_to: model.year_to,
+          band_lo: model.band_lo,
+          band_hi: model.band_hi,
+          thesis: model.thesis,
+          checklist: (model.checklist ?? []).join('\n'),
+          tags: (model.tags ?? []).join(', '),
+          verdict: model.verdict,
+          gallery_query: model.gallery_query,
+          hunt_query: model.hunt_query,
+          prod_note: model.prod_note ?? '',
+          active: model.active,
+        }}
+      />
 
       <div style={{ marginTop: 16 }}>
         <DeleteModelButton code={model.code} />

@@ -28,8 +28,6 @@ const ADMIN_LINKS = [
 
 export default function ContSidebar({ email, isAdmin }: { email: string | null; isAdmin: boolean }) {
   const pathname = usePathname();
-  const links = isAdmin ? [...LINKS, ...ADMIN_LINKS] : LINKS;
-
   return (
     <aside className="cont-sidebar">
       {email ? (
@@ -40,12 +38,24 @@ export default function ContSidebar({ email, isAdmin }: { email: string | null; 
         </div>
       )}
       <nav>
-        {links.map((l) => (
+        {LINKS.map((l) => (
           <Link key={l.href} href={l.href} className={pathname === l.href ? 'on' : ''}>
             {l.label}
           </Link>
         ))}
       </nav>
+      {isAdmin && (
+        <>
+          <div className="cont-sidebar-section mono">▸ ADMINISTRARE</div>
+          <nav>
+            {ADMIN_LINKS.map((l) => (
+              <Link key={l.href} href={l.href} className={pathname === l.href ? 'on admin' : 'admin'}>
+                {l.label}
+              </Link>
+            ))}
+          </nav>
+        </>
+      )}
       {email && (
         <form action={signOut}>
           <button type="submit" className="btn" style={{ width: '100%', marginTop: 16 }}>

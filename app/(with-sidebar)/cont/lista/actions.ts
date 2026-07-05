@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { createClient } from '@/lib/supabase/server';
 import { CRITERIA, STATUSES, type WatchlistStatus } from '@/lib/scoring';
+import { trackEvent } from '@/lib/track';
 
 export type ActionResult = { error: string } | { ok: true };
 
@@ -42,7 +43,10 @@ export async function addWatchlistItem(formData: FormData): Promise<ActionResult
     note: formData.get('note'),
     cond: formData.get('cond'),
   });
-  if (!parsed.success) return { error: parsed.error.issues[0].message };
+  if (!parsed.success) {
+    await trackEvent('form_error', { action: 'add_watchlist_item', message: parsed.error.issues[0].message });
+    return { error: parsed.error.issues[0].message };
+  }
 
   const { supabase, user } = await requireUser();
   if (!user) return { error: 'Neautentificat.' };
@@ -66,8 +70,12 @@ export async function addWatchlistItem(formData: FormData): Promise<ActionResult
     criteria: {},
     price_history: priceNum != null ? [{ price: priceNum, at: todayIso() }] : [],
   });
-  if (error) return { error: error.message };
+  if (error) {
+    await trackEvent('form_error', { action: 'add_watchlist_item', message: error.message });
+    return { error: error.message };
+  }
 
+  await trackEvent('watchlist_item_added', { model_code: parsed.data.model_code });
   revalidatePath('/cont/lista');
   return { ok: true };
 }
