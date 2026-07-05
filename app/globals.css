@@ -211,12 +211,21 @@ main { padding: 18px 0 10px; }
 /* Trei vederi (față/lateral/spate) alăturate — vezi Blueprint.tsx (view prop). */
 .blueprint-row { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 10px; margin-top: 10px; align-items: end; }
 @media (max-width: 560px) { .blueprint-row { grid-template-columns: 1fr; } }
-.blueprint-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.blueprint-col { display: flex; flex-direction: column; align-items: center; gap: 4px; width: 100%; }
 .blueprint-col svg { width: 100%; height: auto; display: block; }
+.blueprint-photo { width: 100%; border-radius: 2px; overflow: hidden; border: 1px solid var(--line); background: var(--paper); }
+.blueprint-photo img { width: 100%; height: auto; aspect-ratio: 4 / 3; object-fit: cover; display: block; }
 .blueprint-col-label {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
   color: var(--plateedge); text-transform: uppercase;
 }
+.blueprint-col-credit { font-size: 9px; color: var(--plateedge); text-align: center; line-height: 1.4; }
+.blueprint-col-credit a { color: var(--plateedge); }
+.blueprint-col-credit a:hover { color: var(--red); }
+
+/* Fișă tehnică unică (față+motor+spate+lateral) — o singură ilustrație generată. */
+.blueprint-single { border-radius: 2px; overflow: hidden; border: 1px solid var(--line); }
+.blueprint-single img { width: 100%; height: auto; display: block; }
 .gal, .gal-block {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--red);
   text-decoration: none; background: var(--panel);

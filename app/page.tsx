@@ -1,13 +1,11 @@
-import Blueprint from '@/components/Blueprint';
 import AdSlot from '@/components/AdSlot';
 import ModelPhoto from '@/components/ModelPhoto';
+import CarPhotoRow from '@/components/CarPhotoRow';
 import Icon from '@/components/Icon';
 import CommunityStats from '@/components/CommunityStats';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
-
-const bodyLabel = { coupe: 'COUPÉ', roadster: 'ROADSTER', sedan: 'SEDAN' } as const;
 
 export default async function Home() {
   const { models } = await getTargetModels();
@@ -52,22 +50,9 @@ export default async function Home() {
 
               <div className="blueprint">
                 <span className="bp-label">
-                  Fig. {String(i + 1).padStart(2, '0')} · {bodyLabel[m.body]} · față / lateral / spate
+                  Fig. {String(i + 1).padStart(2, '0')} · față / lateral / spate
                 </span>
-                <div className="blueprint-row">
-                  <div className="blueprint-col">
-                    <Blueprint body={m.body} view="front" />
-                    <span className="blueprint-col-label">Față</span>
-                  </div>
-                  <div className="blueprint-col">
-                    <Blueprint body={m.body} view="side" />
-                    <span className="blueprint-col-label">Lateral</span>
-                  </div>
-                  <div className="blueprint-col">
-                    <Blueprint body={m.body} view="rear" />
-                    <span className="blueprint-col-label">Spate</span>
-                  </div>
-                </div>
+                <CarPhotoRow modelCode={m.code} />
                 <a className="gal-block" href={galleryUrl(m)} target="_blank" rel="noopener noreferrer">
                   <Icon name="camera" /> Galerie foto →
                 </a>

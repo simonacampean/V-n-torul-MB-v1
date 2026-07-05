@@ -1,6 +1,8 @@
 // Fotografii reale per model (homepage) — Wikimedia Commons, licențe libere.
-// Blueprint-urile SVG proprii rămân identitatea vizuală tehnică a platformei;
-// fotografiile sunt un adaos vizual, cu atribuire obligatorie (CC BY/BY-SA).
+// Fiecare model are 3 unghiuri (față/lateral/spate) — înlocuiesc blueprint-urile
+// SVG schematice, la cererea explicită a beneficiarului („prea schematizate,
+// neatractive vizual"). Atribuire obligatorie sub fiecare imagine (cu excepția
+// domeniului public).
 export interface ModelPhoto {
   file: string;
   width: number;
@@ -11,6 +13,23 @@ export interface ModelPhoto {
   sourceUrl: string;
 }
 
+export type CarAngle = 'front' | 'side' | 'rear';
+
+export interface TechImage {
+  file: string;
+  width: number;
+  height: number;
+}
+
+// Fișă tehnică unică per model (față+motor+spate+lateral într-o singură
+// ilustrație) — generată de beneficiar, înlocuiește rândul de 3 fotografii
+// separate acolo unde există. Modelele fără intrare aici cad pe MODEL_ANGLE_PHOTOS
+// (vezi CarPhotoRow/ModelTechFigure).
+export const MODEL_TECH_IMAGE: Partial<Record<string, TechImage>> = {
+  W124: { file: '/models/w124-tech.jpg', width: 1600, height: 872 },
+};
+
+// Fotografia hero (mare, deasupra fișei modelului) — neschimbată.
 export const MODEL_PHOTOS: Record<string, ModelPhoto> = {
   W124: {
     file: '/models/w124.jpg',
@@ -67,3 +86,105 @@ export const MODEL_PHOTOS: Record<string, ModelPhoto> = {
     sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes_Benz_S_Coupe_W140_at_Legendy_2018_in_Prague.jpg',
   },
 };
+
+// Cele 3 unghiuri tehnice (față/lateral/spate) — înlocuiesc Blueprint.tsx (SVG).
+export const MODEL_ANGLE_PHOTOS: Record<string, Record<CarAngle, ModelPhoto>> = {
+  W124: {
+    front: {
+      file: '/models/w124-front.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1993_Mercedes-Benz_320_CE_(C_124)_coupe_(22081848080).jpg',
+    },
+    side: {
+      file: '/models/w124-side.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1993_Mercedes-Benz_320_CE_(C_124)_coupe_(22269934925).jpg',
+    },
+    rear: {
+      file: '/models/w124-rear.jpg', width: 1600, height: 901,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1993_Mercedes-Benz_320_CE_(C_124)_coupe_(22269875775).jpg',
+    },
+  },
+  R129: {
+    front: {
+      file: '/models/r129-front.jpg', width: 1600, height: 1200,
+      author: 'nakhon100', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes-Benz_SL_R129_(8598310797).jpg',
+    },
+    side: {
+      file: '/models/r129-side.jpg', width: 1600, height: 1200,
+      author: 'nakhon100', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes-Benz_SL_R129_(8598310855).jpg',
+    },
+    rear: {
+      file: '/models/r129-rear.jpg', width: 1600, height: 858,
+      author: 'Rudolf Stricker', license: 'Attribution (licență liberă)', licenseUrl: 'https://commons.wikimedia.org/wiki/Commons:Reusing_content_outside_Wikimedia',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes-Benz_R129_rear_20080625.jpg',
+    },
+  },
+  W201: {
+    front: {
+      file: '/models/w201-front.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1987_Mercedes_Benz_190_E_(W201)_2.6_sedan_(24058960472).jpg',
+    },
+    side: {
+      file: '/models/w201-side.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1987_Mercedes_Benz_190_E_(W201)_2.6_sedan_(24084486981).jpg',
+    },
+    // Reutilizează exact fotografia hero — face parte din același set de 4 poze, aceeași mașină.
+    rear: MODEL_PHOTOS.W201,
+  },
+  W126: {
+    front: {
+      file: '/models/w126-front.jpg', width: 1600, height: 1200,
+      author: 'BrokenSphere', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1984_black_Mercedes_SEC_500_front.JPG',
+    },
+    side: {
+      file: '/models/w126-side.jpg', width: 1600, height: 1200,
+      author: 'BrokenSphere', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1984_black_Mercedes_SEC_500_left_side.JPG',
+    },
+    rear: {
+      file: '/models/w126-rear.jpg', width: 1600, height: 1200,
+      author: 'BrokenSphere', license: 'CC BY-SA 3.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/3.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1984_black_Mercedes_SEC_500_rear.JPG',
+    },
+  },
+  W123: {
+    front: {
+      file: '/models/w123-front.jpg', width: 1600, height: 900,
+      author: 'Hendy Sannidhya', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes_Benz_C123_(tampak_depan),_Surabaya.jpg',
+    },
+    // Reutilizează fotografia hero — mașină diferită de față/spate; nu există un set complet
+    // cu aceeași mașină pe Commons pentru acest model.
+    side: MODEL_PHOTOS.W123,
+    rear: {
+      file: '/models/w123-rear.jpg', width: 1600, height: 1067,
+      author: 'Hendy Sannidhya', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:Mercedes_Benz_C123_(tampak_belakang),_Surabaya.jpg',
+    },
+  },
+  W140: {
+    front: {
+      file: '/models/w140-front.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1995_Mercedes-Benz_CL_500_(C_140)_coupe_(27752572212).jpg',
+    },
+    side: {
+      file: '/models/w140-side.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1995_Mercedes-Benz_CL_500_(C_140)_coupe_(27576170630).jpg',
+    },
+    rear: {
+      file: '/models/w140-rear.jpg', width: 1600, height: 1066,
+      author: 'Jeremy', license: 'CC BY 2.0', licenseUrl: 'https://creativecommons.org/licenses/by/2.0/',
+      sourceUrl: 'https://commons.wikimedia.org/wiki/File:1995_Mercedes-Benz_CL_500_(C_140)_coupe_(27752589912).jpg',
+    },
+  },
+};
+
