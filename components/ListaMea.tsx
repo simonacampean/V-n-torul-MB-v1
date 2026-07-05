@@ -44,6 +44,7 @@ export default function ListaMea({ models, items }: Props) {
 
   const [form, setForm] = useState(emptyForm(models[0]?.code ?? ''));
   const [formError, setFormError] = useState<string | null>(null);
+  const [formSuccess, setFormSuccess] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const [q, setQ] = useState('');
@@ -72,6 +73,9 @@ export default function ListaMea({ models, items }: Props) {
       return;
     }
     setForm(emptyForm(form.model_code));
+    // P6 — confirmarea selecției: moment scurt și explicit, nu doar refresh tăcut.
+    setFormSuccess(true);
+    setTimeout(() => setFormSuccess(false), 2600);
     await refresh();
   }
 
@@ -187,6 +191,11 @@ export default function ListaMea({ models, items }: Props) {
         {formError && (
           <p role="alert" style={{ color: '#c0392b', marginTop: 8 }}>
             {formError}
+          </p>
+        )}
+        {formSuccess && (
+          <p role="status" className="confirm-added" style={{ marginTop: 8 }}>
+            ✓ Adăugat în listă
           </p>
         )}
         <div className="btnrow">

@@ -211,6 +211,12 @@ main { padding: 18px 0 10px; }
 .intro { font-size: 14px; line-height: 1.55; color: var(--inksoft); margin-bottom: 18px; max-width: 760px; }
 .intro b { color: var(--ink); }
 
+/* P1 — claritate: ce face platforma, într-o frază, vizibilă fără scroll */
+.tagline {
+  font-size: 19px; font-weight: 700; line-height: 1.4; color: var(--ink);
+  margin-bottom: 10px; max-width: 640px;
+}
+
 /* ===== Onboarding + statistici personale (/cont) — portate din v5 (.onb/.dstats) ===== */
 .onb {
   background: var(--panel); border: 1px solid var(--line); border-left: 4px solid var(--red);
@@ -338,6 +344,43 @@ footer.site .in {
 .ob.hist { background: #E4F0EA; color: var(--green); border-color: #BFDCCB; }
 .ob.exc { background: var(--green); color: #fff; border-color: var(--green); }
 .obreak { font-family: var(--font-mono); font-size: 10px; color: var(--plateedge); margin-top: 6px; }
+
+/* P2 — credibilitate: disclaimer discret, dar chiar lângă preț/scor */
+.disclaimer {
+  font-size: 11px; color: var(--plateedge); max-width: 760px; margin-top: 6px; line-height: 1.5;
+}
+
+/* P4 — emoție: puls subtil pe semnalele pozitive reale (excelentă/chilipir),
+   nu decorativ — respectă prefers-reduced-motion (regula globală de mai sus). */
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(46, 107, 79, 0.35); }
+  50% { box-shadow: 0 0 0 4px rgba(46, 107, 79, 0); }
+}
+.rank.pulse { animation: pulse-glow 2.2s ease-in-out infinite; }
+.chip.chilipir { animation: pulse-glow 2.2s ease-in-out infinite; }
+
+/* P3 — viteză percepută: feedback instant la atingere pe acțiuni principale */
+.btn, .offer, .statcard, a.gal {
+  transition: transform 0.1s ease, opacity 0.1s ease;
+}
+.btn:active { transform: scale(0.97); opacity: 0.9; }
+.offer:active, .statcard:active { transform: scale(0.995); }
+
+/* P3 — schelet de încărcare (loading.tsx) */
+@keyframes shimmer { 0% { background-position: -200px 0; } 100% { background-position: 200px 0; } }
+.skeleton {
+  border-radius: var(--radius); background: var(--linesoft);
+  background-image: linear-gradient(90deg, var(--linesoft) 0px, var(--paper) 40px, var(--linesoft) 80px);
+  background-size: 400px 100%; animation: shimmer 1.4s ease infinite;
+}
+.skeleton-card { border-left-color: var(--linesoft); }
+
+/* P6 — confirmare vizuală explicită la acțiuni cheie (nu doar refresh tăcut) */
+@keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+.confirm-added {
+  display: inline-flex; align-items: center; gap: 6px; color: var(--green); font-weight: 600;
+  font-family: var(--font-mono); font-size: 13px; animation: fade-in-up 0.25s ease;
+}
 .vinlinks { font-size: 11px; color: var(--inksoft); margin-top: 8px; }
 .vinlinks a { color: var(--red); font-weight: 600; text-decoration: none; }
 .vinlinks a:hover, .vinlinks a:focus-visible { text-decoration: underline; }

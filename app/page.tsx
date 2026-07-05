@@ -14,6 +14,10 @@ export default async function Home() {
     <>
       <main>
         <div className="wrap">
+          <p className="tagline">
+            Îți spunem, pentru fiecare Mercedes-Benz clasic urmărit, dacă prețul e corect —
+            pe bază de date reale, nu presupuneri.
+          </p>
           <p className="intro">
             Șase ținte selectate pe criterii de investiție. Regula de aur:{' '}
             <b>cel mai bun exemplar dintr-un model accesibil</b>.

@@ -35,6 +35,13 @@ interface OfferRow {
   url: string | null;
   score: number;
   excellent: boolean;
+  first_seen: string;
+  last_seen: string;
+}
+
+/** P6 — urgență pe date reale: zile de când oferta e urmărită de agent. */
+function daysAgo(iso: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / 86400000));
 }
 
 const SORTS = {
@@ -65,7 +72,7 @@ export default async function OfertePage({
 
   let query = supabase
     .from('offers')
-    .select('id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent')
+    .select('id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent,first_seen,last_seen')
     .eq('status', 'active')
     .eq('moderation', 'approved')
     .order(sort.column, { ascending: sort.ascending, nullsFirst: false })
@@ -93,6 +100,8 @@ export default async function OfertePage({
   const shownModels = modelFilter && modelFilter !== 'TOATE' ? [modelFilter] : models.map((m) => m.code);
   const excTotal = offers.filter((o) => o.excellent).length;
   const vinLinks = historyCheckLinks();
+  // P6 — ancoră de preț: banda „corectă" a modelului, afișată lângă fiecare ofertă.
+  const bandOf = new Map(models.map((m) => [m.code, { lo: m.band_lo, hi: m.band_hi }]));
 
   return (
     <main className="wrap" style={{ paddingTop: 32, paddingBottom: 48 }}>
@@ -100,6 +109,11 @@ export default async function OfertePage({
       <p style={{ marginTop: 12, color: 'var(--inksoft)', maxWidth: 760 }}>
         Cele mai bune oferte per model, ierarhizate calitate-preț: preț vs stare, dotări (full options),
         istoric verificat, negociabilitate și costul aducerii în țară.
+      </p>
+      {/* P2 — credibilitate: disclaimerul chiar lângă preț, nu doar pe homepage. */}
+      <p className="disclaimer mono">
+        Scorurile și benzile de preț sunt orientative, calculate din date publice — nu reprezintă
+        consultanță financiară. Verifică mereu mașina și istoricul înainte de plată.
       </p>
 
       <div className="meta mono" style={{ marginTop: 12, marginBottom: 8 }}>
@@ -130,6 +144,7 @@ export default async function OfertePage({
         {modelFilter && <input type="hidden" name="model" value={modelFilter} />}
         <input
           type="number"
+          inputMode="numeric"
           name="pret_max"
           placeholder="Preț maxim (€)"
           min={0}
@@ -188,9 +203,12 @@ export default async function OfertePage({
               const isExc = Boolean(user) && o.excellent;
               const tc = trCost(o.country);
               const total = offerTotal(o.price, o.country);
+              const band = bandOf.get(o.model_code);
+              const daysOnMarket = daysAgo(o.first_seen);
+              const updatedDays = daysAgo(o.last_seen);
               return (
                 <article key={o.id} className={`offer ${isExc ? 'exc' : ''}`}>
-                  <span className="rank">
+                  <span className={`rank ${isExc ? 'pulse' : ''}`}>
                     #{rank + 1}
                     {isExc ? ' · EXCELENTĂ' : ''}
                   </span>
@@ -208,6 +226,11 @@ export default async function OfertePage({
                           .filter(Boolean)
                           .join(' · ')}
                       </div>
+                      {band && (
+                        <div className="meta mono" style={{ marginTop: 2 }}>
+                          bandă model: {fmt(band.lo)}–{fmt(band.hi)} €
+                        </div>
+                      )}
                     </div>
                     <div className="oscore" style={{ color: isExc ? 'var(--green)' : o.score >= 65 ? 'var(--amber)' : 'var(--inksoft)' }}>
                       {o.score}
@@ -224,6 +247,12 @@ export default async function OfertePage({
                         la cheie: <b>{fmt(total)} €</b>
                       </span>
                     )}
+                    <span className="ob">
+                      pe piață de {daysOnMarket === 0 ? 'azi' : `${daysOnMarket} zile`}
+                    </span>
+                    <span className="ob">
+                      actualizat {updatedDays === 0 ? 'azi' : `acum ${updatedDays} zile`}
+                    </span>
                   </div>
                   {o.note && <div style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 8 }}>{o.note}</div>}
                   {!o.history_verified && (

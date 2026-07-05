@@ -57,7 +57,9 @@ export function verdictOf(band: PriceBand | null, p: number | null, cond?: strin
   const lo = Math.round(band.lo * mult);
   const hi = Math.round(band.hi * mult);
   if (p < lo * 0.85)
-    return { key: 'CHILIPIR', label: '⚠ CHILIPIR POTENȚIAL', desc: `Cu ${Math.round((1 - p / lo) * 100)}% sub pragul pieței pentru starea aleasă`, lo, hi };
+    // P4 — emoție: confirmă câștigul („ai prins-o"), nu doar constată un prag depășit;
+    // avertismentul de verificare rămâne, dar ca pas următor, nu ca rezervă principală.
+    return { key: 'CHILIPIR', label: '🎯 AI PRINS UN CHILIPIR', desc: `Cu ${Math.round((1 - p / lo) * 100)}% sub prețul corect pentru starea ei — verifică starea reală înainte să confirmi`, lo, hi };
   if (p < lo) return { key: 'SUB', label: 'SUB PIAȚĂ', desc: 'Preț atractiv — verifică de ce', lo, hi };
   if (p <= hi) return { key: 'LA', label: 'LA PIAȚĂ', desc: 'Preț corect pentru starea aleasă', lo, hi };
   return { key: 'PESTE', label: 'PESTE PIAȚĂ', desc: 'Justificat doar de rulaj mic / dotări rare', lo, hi };
