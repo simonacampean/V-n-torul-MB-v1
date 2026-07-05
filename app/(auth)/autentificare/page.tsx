@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { signIn } from '../actions';
+import ResendConfirmationForm from '@/components/ResendConfirmationForm';
 
 export default async function AutentificarePage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string; redirect_to?: string }>;
+  searchParams: Promise<{ error?: string; redirect_to?: string; expired?: string }>;
 }) {
-  const { error, redirect_to: redirectTo } = await searchParams;
+  const { error, redirect_to: redirectTo, expired } = await searchParams;
 
   return (
     <main className="wrap" style={{ maxWidth: 420, paddingTop: 48, paddingBottom: 48 }}>
@@ -19,6 +20,7 @@ export default async function AutentificarePage({
           {error}
         </p>
       )}
+      {expired === '1' && <ResendConfirmationForm />}
 
       <form action={signIn} style={{ display: 'grid', gap: 14, marginTop: 20 }}>
         <input type="hidden" name="redirect_to" value={redirectTo ?? '/cont'} />

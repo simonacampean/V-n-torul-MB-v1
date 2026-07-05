@@ -7,6 +7,7 @@ import SiteFooter from '@/components/SiteFooter';
 import ConsentDefaultScript from '@/components/ConsentDefaultScript';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import AdSenseLoader from '@/components/AdSenseLoader';
+import AuthErrorHandler from '@/components/AuthErrorHandler';
 import './globals.css';
 
 /* Fonturile Datenkarte prin next/font: self-hosted la build, zero blocaj de
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="ro" className={`${archivo.variable} ${plexMono.variable}`}>
       <body>
         <ConsentDefaultScript />
+        <AuthErrorHandler />
         <SiteHeader />
         {children}
         <SiteFooter />

@@ -52,10 +52,23 @@ export default async function Home() {
 
               <div className="blueprint">
                 <span className="bp-label">
-                  Fig. {String(i + 1).padStart(2, '0')} · {bodyLabel[m.body]} · profil
+                  Fig. {String(i + 1).padStart(2, '0')} · {bodyLabel[m.body]} · față / lateral / spate
                 </span>
-                <Blueprint body={m.body} />
-                <a className="gal" href={galleryUrl(m)} target="_blank" rel="noopener noreferrer">
+                <div className="blueprint-row">
+                  <div className="blueprint-col">
+                    <Blueprint body={m.body} view="front" />
+                    <span className="blueprint-col-label">Față</span>
+                  </div>
+                  <div className="blueprint-col">
+                    <Blueprint body={m.body} view="side" />
+                    <span className="blueprint-col-label">Lateral</span>
+                  </div>
+                  <div className="blueprint-col">
+                    <Blueprint body={m.body} view="rear" />
+                    <span className="blueprint-col-label">Spate</span>
+                  </div>
+                </div>
+                <a className="gal-block" href={galleryUrl(m)} target="_blank" rel="noopener noreferrer">
                   <Icon name="camera" /> Galerie foto →
                 </a>
               </div>

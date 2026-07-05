@@ -202,20 +202,28 @@ main { padding: 18px 0 10px; }
 .verdict b { color: var(--red); }
 .blueprint {
   background: var(--paper); border: 1px solid var(--linesoft); border-radius: 2px;
-  margin-top: 14px; padding: 10px 14px 6px; position: relative; overflow: hidden;
+  margin-top: 14px; padding: 10px 14px 12px; position: relative; overflow: hidden;
 }
-.blueprint svg { width: 100%; height: auto; display: block; max-height: 150px; }
 .bp-label {
   font-family: var(--font-mono); font-size: 10px; letter-spacing: 1.5px;
   color: var(--plateedge); text-transform: uppercase;
 }
-.gal {
-  position: absolute; right: 10px; bottom: 8px;
+/* Trei vederi (față/lateral/spate) alăturate — vezi Blueprint.tsx (view prop). */
+.blueprint-row { display: grid; grid-template-columns: 1fr 1.6fr 1fr; gap: 10px; margin-top: 10px; align-items: end; }
+@media (max-width: 560px) { .blueprint-row { grid-template-columns: 1fr; } }
+.blueprint-col { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.blueprint-col svg { width: 100%; height: auto; display: block; }
+.blueprint-col-label {
+  font-family: var(--font-mono); font-size: 10px; letter-spacing: 1px;
+  color: var(--plateedge); text-transform: uppercase;
+}
+.gal, .gal-block {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600; color: var(--red);
   text-decoration: none; background: var(--panel);
   border: 1px solid var(--line); border-radius: 2px; padding: 6px 10px;
-  min-height: var(--touch-min); display: inline-flex; align-items: center;
+  min-height: var(--touch-min); display: inline-flex; align-items: center; gap: 6px;
 }
+.gal-block { margin-top: 12px; }
 .intro { font-size: 14px; line-height: 1.55; color: var(--inksoft); margin-bottom: 18px; max-width: 760px; }
 .intro b { color: var(--ink); }
 

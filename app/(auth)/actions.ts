@@ -10,7 +10,7 @@ import { logAudit } from '@/lib/audit';
 const emailSchema = z.string().email('Adresă de email invalidă.');
 
 function siteUrl() {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
+  return process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3001';
 }
 
 export async function signUp(formData: FormData) {
@@ -77,6 +77,25 @@ export async function signIn(formData: FormData) {
 
   revalidatePath('/', 'layout');
   redirect(redirectTo);
+}
+
+/**
+ * Retrimite linkul de confirmare când cel original a expirat sau a fost deja
+ * folosit (vezi AuthErrorHandler) — fără asta userul rămâne blocat, pentru că
+ * o nouă înregistrare cu același email eșuează cu „cont existent”. Mesaj
+ * generic indiferent de rezultat, ca la resetarea parolei (anti-enumerare).
+ */
+export async function resendConfirmationEmail(email: string): Promise<{ ok: true } | { error: string }> {
+  const emailCheck = emailSchema.safeParse(email);
+  if (!emailCheck.success) return { error: emailCheck.error.issues[0].message };
+
+  const supabase = await createClient();
+  await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${siteUrl()}/auth/callback` },
+  });
+  return { ok: true };
 }
 
 export async function signOut() {
