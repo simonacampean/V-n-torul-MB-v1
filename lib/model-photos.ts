@@ -27,6 +27,11 @@ export interface TechImage {
 // (vezi CarPhotoRow/ModelTechFigure).
 export const MODEL_TECH_IMAGE: Partial<Record<string, TechImage>> = {
   W124: { file: '/models/w124-tech.jpg', width: 1600, height: 872 },
+  R129: { file: '/models/r129-tech.jpg', width: 1600, height: 872 },
+  W201: { file: '/models/w201-tech.jpg', width: 1600, height: 872 },
+  W126: { file: '/models/w126-tech.jpg', width: 1600, height: 872 },
+  W123: { file: '/models/w123-tech.jpg', width: 1600, height: 872 },
+  W140: { file: '/models/w140-tech.jpg', width: 1600, height: 872 },
 };
 
 // Fotografia hero (mare, deasupra fișei modelului) — neschimbată.
