@@ -74,10 +74,16 @@ export interface OfferInput {
   neg?: Negotiability | string;
   country?: string;
   km?: number | string;
+  /** Bonus de raritate calculat de agentul „Arheologul de Opțiuni" (0-10) —
+   * adăugare la formula v5, aprobată explicit de beneficiar (nu era în v5
+   * original). Identic ca poziție în formulă cu p_bonus_dotari_rare din
+   * offer_score() (SQL) — vezi migrarea 0018 și tests/offer-score-sql-parity.test.ts. */
+  bonusDotariRare?: number;
 }
 
 /** Scor calitate-preț 0–100 (v5: offerScore):
- *  preț vs bandă(stare) 40 · dotări 15 · istoric 15 · negociere 8 · aducere 12 · km 10 */
+ *  preț vs bandă(stare) 40 · dotări 15 · istoric 15 · negociere 8 · aducere 12 · km 10
+ *  + bonus de raritate 0-10 (Arheologul de Opțiuni, adăugare v2.0 peste v5) */
 export function offerScore(o: OfferInput, transportTable: Record<string, number> = TRANSPORT): number {
   const p = parsePrice(o.price);
   if (!o.band || p == null) return 0;
@@ -94,6 +100,7 @@ export function offerScore(o: OfferInput, transportTable: Record<string, number>
   s += t === 0 ? 12 : t <= 600 ? 9 : t <= 900 ? 6 : 3;
   const km = parsePrice(o.km);
   s += km == null ? 4 : km >= 80000 && km <= 150000 ? 10 : km < 80000 ? 7 : 4;
+  s += o.bonusDotariRare ?? 0;
   return Math.min(100, s);
 }
 

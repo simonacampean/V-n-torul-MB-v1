@@ -65,6 +65,22 @@ describe('offerScore — scor calitate-preț 0–100 (v5)', () => {
     // 22 (LA) + 3 (standard) + 0 + 4 (PARTIAL) + 9 (HU=300≤600) + 4 (km null) = 42
     expect(a).toBe(42);
   });
+  it('bonus de raritate (Arheologul de Opțiuni) se adaugă la scor', () => {
+    const fara = offerScore({ band: W124, price: 10000, neg: 'PARTIAL', country: 'HU' });
+    const cu = offerScore({ band: W124, price: 10000, neg: 'PARTIAL', country: 'HU', bonusDotariRare: 5 });
+    expect(cu).toBe(fara + 5);
+  });
+  it('bonusul de raritate rămâne plafonat la 100 împreună cu restul', () => {
+    const s = offerScore({
+      band: R129, price: 9000, cond: '2', options: 'full',
+      history: true, neg: 'DA', country: 'RO', km: 100000, bonusDotariRare: 10,
+    });
+    expect(s).toBe(100); // 40+15+15+8+12+10 = 100 deja; +10 tot 100, nu 110
+  });
+  it('fără bonus (undefined), scorul e neschimbat', () => {
+    const s = offerScore({ band: W124, price: 8500, cond: '2', options: 'full', history: true, neg: 'DA', country: 'DE', km: 125000 });
+    expect(s).toBe(89);
+  });
 });
 
 describe('costuri de aducere și „la cheie"', () => {

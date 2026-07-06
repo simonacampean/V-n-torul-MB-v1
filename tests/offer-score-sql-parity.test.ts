@@ -19,16 +19,16 @@ const bandOf = (code: string) => {
 // 20 de oferte de test, variate pe toate dimensiunile formulei.
 const TEST_OFFERS: (OfferInput & { model: string })[] = [
   { model: 'W124', band: bandOf('W124'), price: 8500, cond: '2', options: 'full', history: true, neg: 'DA', country: 'DE', km: 125000 },
-  { model: 'R129', band: bandOf('R129'), price: 9000, cond: '2', options: 'full', history: true, neg: 'DA', country: 'RO', km: 100000 },
+  { model: 'R129', band: bandOf('R129'), price: 9000, cond: '2', options: 'full', history: true, neg: 'DA', country: 'RO', km: 100000, bonusDotariRare: 10 }, // deja 100 fără bonus — verifică plafonarea la 100
   { model: 'W140', band: bandOf('W140'), price: 14000, cond: '2', options: 'standard', history: false, neg: 'NU', country: 'UK', km: 220000 },
   { model: 'W124', band: bandOf('W124'), price: 10000, cond: undefined, options: undefined, history: false, neg: 'PARTIAL', country: 'HU', km: undefined },
-  { model: 'W201', band: bandOf('W201'), price: 6800, cond: '1', options: 'partial', history: true, neg: 'DA', country: 'RO', km: 60000 },
+  { model: 'W201', band: bandOf('W201'), price: 6800, cond: '1', options: 'partial', history: true, neg: 'DA', country: 'RO', km: 60000, bonusDotariRare: 5 },
   { model: 'W126', band: bandOf('W126'), price: 20000, cond: '3', options: 'full', history: true, neg: 'DA', country: 'ES', km: 180000 },
   { model: 'W123', band: bandOf('W123'), price: 7000, cond: '4', options: 'standard', history: false, neg: 'NU', country: 'PT', km: 300000 },
   { model: 'W140', band: bandOf('W140'), price: 5500, cond: '2', options: 'full', history: true, neg: 'DA', country: 'RO', km: 90000 },
   { model: 'R129', band: bandOf('R129'), price: 25000, cond: '1', options: 'full', history: true, neg: 'PARTIAL', country: 'CH', km: 40000 },
   { model: 'W201', band: bandOf('W201'), price: 9500, cond: '2', options: 'partial', history: false, neg: 'DA', country: 'PL', km: 140000 },
-  { model: 'W124', band: bandOf('W124'), price: 12000, cond: '2', options: 'standard', history: false, neg: 'DA', country: 'AT', km: 155000 },
+  { model: 'W124', band: bandOf('W124'), price: 12000, cond: '2', options: 'standard', history: false, neg: 'DA', country: 'AT', km: 155000, bonusDotariRare: 10 },
   { model: 'W126', band: bandOf('W126'), price: 9000, cond: '3', options: 'partial', history: true, neg: 'PARTIAL', country: 'CZ', km: 210000 },
   { model: 'W123', band: bandOf('W123'), price: 15000, cond: '1', options: 'full', history: true, neg: 'DA', country: 'FR', km: 50000 },
   { model: 'W140', band: bandOf('W140'), price: 8000, cond: '2', options: 'full', history: false, neg: 'NU', country: 'IT', km: 130000 },
@@ -56,6 +56,7 @@ describe.runIf(canRun)('S-01 — paritate scor SQL (offer_score) vs JS (lib/scor
       p_negotiability: offer.neg ?? null,
       p_transport_cost: trCost(offer.country, TRANSPORT),
       p_km: offer.km ?? null,
+      p_bonus_dotari_rare: offer.bonusDotariRare ?? 0,
     });
 
     expect(error).toBeNull();
