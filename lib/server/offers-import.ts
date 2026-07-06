@@ -8,6 +8,7 @@ import { runAgent } from '@/lib/agents/orchestrator';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
+import type { ArheologulOptiuniInput, ArheologulOptiuniOutput } from '@/lib/agents/arheologul-optiuni';
 
 /** Verificare automată de autenticitate (Detectivul de Autenticitate) — rulează
  * DOAR dacă anunțul are un `note` de analizat, și e strict best-effort: un eșec
@@ -61,6 +62,27 @@ async function verificaGhidRar(admin: SupabaseClient, offerId: string, input: Gh
   await admin
     .from('offers')
     .update({ eligibilitate_rar: result.data.eligibilitate_rar, rezumat_ro: result.data.rezumat_ro })
+    .eq('id', offerId);
+}
+
+/** Arheologul de Opțiuni — rulează DOAR dacă anunțul are un `note` de analizat (la fel ca
+ * verificaAutenticitate); e 100% determinist (fără apel Claude), deci practic gratuit, dar
+ * fără text n-are ce căuta. Bonusul e stocat, NU conectat la scorul real — vezi migrarea 0017. */
+async function verificaArheologulOptiuni(admin: SupabaseClient, offerId: string, note: string | null): Promise<void> {
+  if (!note?.trim()) return;
+  const result = await runAgent<ArheologulOptiuniInput, ArheologulOptiuniOutput>(
+    'arheologul-optiuni',
+    { text: note },
+    { triggerSource: 'import_oferte', relatedOfferId: offerId }
+  );
+  if (!result.ok) return;
+  await admin
+    .from('offers')
+    .update({
+      dotari_rare_detectate: result.data.dotari_rare_detectate,
+      nota_raritate: result.data.nota_raritate,
+      bonus_dotari_rare: result.data.bonus_dotari_rare,
+    })
     .eq('id', offerId);
 }
 
@@ -121,6 +143,7 @@ export async function applyImportPlan(
         anFabricatie: offer.year ?? null,
         verdictFiltruAntiFals: verdictFiltru,
       });
+      await verificaArheologulOptiuni(admin, insertedRow.id, offer.note ?? null);
     }
   }
 

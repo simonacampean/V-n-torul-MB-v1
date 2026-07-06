@@ -8,6 +8,7 @@ import { trendScoutAgent } from './trend-scout';
 import { negociatorUmbraAgent } from './negociator-umbra';
 import { filtruAntiFalsAgent } from './filtru-anti-fals';
 import { ghidRarAgent } from './ghid-rar';
+import { arheologulOptiuniAgent } from './arheologul-optiuni';
 
 // Registrul e intenționat „type-erased" (any) — fiecare agent are propriul
 // input/output distinct; siguranța de tip reală se aplică la punctul de
@@ -19,6 +20,7 @@ export const AGENT_REGISTRY: Record<string, AgentDefinition<any, any>> = {
   [negociatorUmbraAgent.id]: negociatorUmbraAgent,
   [filtruAntiFalsAgent.id]: filtruAntiFalsAgent,
   [ghidRarAgent.id]: ghidRarAgent,
+  [arheologulOptiuniAgent.id]: arheologulOptiuniAgent,
 };
 
 export function listAgents(): AgentDefinition[] {

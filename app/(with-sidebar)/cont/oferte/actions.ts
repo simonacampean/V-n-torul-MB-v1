@@ -13,6 +13,7 @@ import { runAgent } from '@/lib/agents/orchestrator';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
+import type { ArheologulOptiuniInput, ArheologulOptiuniOutput } from '@/lib/agents/arheologul-optiuni';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -187,6 +188,27 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
       await admin
         .from('offers')
         .update({ eligibilitate_rar: result.data.eligibilitate_rar, rezumat_ro: result.data.rezumat_ro })
+        .eq('id', insertedRow.id);
+    }
+  }
+
+  // Arheologul de Opțiuni — best-effort, 100% determinist (fără apel Claude); rulează
+  // doar dacă există note de analizat.
+  if (note?.trim()) {
+    const result = await runAgent<ArheologulOptiuniInput, ArheologulOptiuniOutput>(
+      'arheologul-optiuni',
+      { text: note },
+      { triggerSource: 'anunt_nativ', relatedOfferId: insertedRow.id }
+    );
+    if (result.ok) {
+      const admin = createAdminClient();
+      await admin
+        .from('offers')
+        .update({
+          dotari_rare_detectate: result.data.dotari_rare_detectate,
+          nota_raritate: result.data.nota_raritate,
+          bonus_dotari_rare: result.data.bonus_dotari_rare,
+        })
         .eq('id', insertedRow.id);
     }
   }

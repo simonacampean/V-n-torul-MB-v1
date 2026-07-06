@@ -8,6 +8,7 @@ import ModerareDraft from '@/components/ModerareDraft';
 import RiscAutenticitateBadge from '@/components/RiscAutenticitateBadge';
 import FiltruAntiFalsBadge from '@/components/FiltruAntiFalsBadge';
 import GhidRarBadge from '@/components/GhidRarBadge';
+import ArheologulOptiuniBadge from '@/components/ArheologulOptiuniBadge';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 
@@ -32,7 +33,7 @@ export default async function AdminOfertePage() {
     supabase
       .from('offers')
       .select(
-        'id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro'
+        'id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro,dotari_rare_detectate,nota_raritate,bonus_dotari_rare'
       )
       .eq('moderation', 'pending')
       .order('created_at', { ascending: true }),
@@ -100,6 +101,11 @@ export default async function AdminOfertePage() {
           />
           <FiltruAntiFalsBadge detalii={o.filtru_anti_fals_detalii as FiltruAntiFalsOutput | null} />
           <GhidRarBadge eligibilitate={o.eligibilitate_rar} rezumat={o.rezumat_ro} />
+          <ArheologulOptiuniBadge
+            dotari={o.dotari_rare_detectate}
+            nota={o.nota_raritate}
+            bonus={o.bonus_dotari_rare}
+          />
           <div style={{ marginTop: 10 }}>
             <ModerareOferta offerId={o.id} />
           </div>
