@@ -34,7 +34,7 @@ export default async function AdminOfertePage() {
     supabase
       .from('offers')
       .select(
-        'id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro,dotari_rare_detectate,nota_raritate,bonus_dotari_rare,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare'
+        'id,model_code,title,price,year,km,cond,country,url,note,created_at,submitted_by,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro,dotari_rare_detectate,nota_raritate,bonus_dotari_rare,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare'
       )
       .eq('moderation', 'pending')
       .order('created_at', { ascending: true }),
@@ -73,8 +73,13 @@ export default async function AdminOfertePage() {
       })}
 
       <div className="seclabel" style={{ marginTop: 24 }}>
-        ▸ Anunțuri native în așteptare ({(pending ?? []).length})
+        ▸ Anunțuri în așteptare ({(pending ?? []).length})
       </div>
+      <p className="disclaimer mono">
+        Include atât anunțuri native trimise de utilizatori, cât și anunțuri din rutina
+        programată blocate de gate-ul de auto-aprobare (risc de autenticitate ridicat, sau un
+        agent de siguranță a eșuat) — verifică-le manual mai jos.
+      </p>
 
       {!pending?.length && <div className="empty">Nimic de moderat momentan.</div>}
 
@@ -83,6 +88,11 @@ export default async function AdminOfertePage() {
           <div className="row">
             <div>
               <span className="plate sm">{o.model_code}</span> <b>{o.title}</b>
+              {!o.submitted_by && (
+                <span className="status warn" style={{ marginLeft: 8 }}>
+                  blocat de gate-ul de auto-aprobare
+                </span>
+              )}
             </div>
           </div>
           <div className="meta mono" style={{ marginTop: 6 }}>
