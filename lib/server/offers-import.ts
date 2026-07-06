@@ -4,6 +4,26 @@
 // generate de rutina Claude programată (app/admin/oferte/actions.ts).
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { fingerprintOf, type ImportPlan } from '@/lib/offers';
+import { runAgent } from '@/lib/agents/orchestrator';
+import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
+
+/** Verificare automată de autenticitate (Detectivul de Autenticitate) — rulează
+ * DOAR dacă anunțul are un `note` de analizat, și e strict best-effort: un eșec
+ * (ex. ANTHROPIC_API_KEY neconfigurat) nu blochează niciodată importul, doar
+ * lasă scorul necompletat pe acel anunț. */
+async function verificaAutenticitate(admin: SupabaseClient, offerId: string, note: string | null): Promise<void> {
+  if (!note?.trim()) return;
+  const result = await runAgent<{ descriere: string }, RaportAutenticitate>(
+    'detectiv-autenticitate',
+    { descriere: note },
+    { triggerSource: 'import_oferte', relatedOfferId: offerId }
+  );
+  if (!result.ok) return;
+  await admin
+    .from('offers')
+    .update({ risc_autenticitate_scor: result.data.scor_risc, risc_autenticitate_detalii: result.data })
+    .eq('id', offerId);
+}
 
 export async function applyImportPlan(
   admin: SupabaseClient,
@@ -24,25 +44,32 @@ export async function applyImportPlan(
   }
 
   for (const offer of plan.toInsert) {
-    const { error: insErr } = await admin.from('offers').insert({
-      model_code: offer.model_code,
-      title: offer.title,
-      price: offer.price,
-      url: offer.url,
-      year: offer.year,
-      km: offer.km,
-      cond: offer.cond,
-      options: offer.options,
-      history_verified: offer.history_verified,
-      negotiability: offer.negotiability,
-      country: offer.country,
-      note: offer.note,
-      submitted_by: submittedBy,
-      moderation: 'approved',
-      status: 'active',
-      fingerprint: fingerprintOf(offer.model_code, offer.year),
-    });
-    if (!insErr) inserted++;
+    const { data: insertedRow, error: insErr } = await admin
+      .from('offers')
+      .insert({
+        model_code: offer.model_code,
+        title: offer.title,
+        price: offer.price,
+        url: offer.url,
+        year: offer.year,
+        km: offer.km,
+        cond: offer.cond,
+        options: offer.options,
+        history_verified: offer.history_verified,
+        negotiability: offer.negotiability,
+        country: offer.country,
+        note: offer.note,
+        submitted_by: submittedBy,
+        moderation: 'approved',
+        status: 'active',
+        fingerprint: fingerprintOf(offer.model_code, offer.year),
+      })
+      .select('id')
+      .single();
+    if (!insErr) {
+      inserted++;
+      await verificaAutenticitate(admin, insertedRow.id, offer.note ?? null);
+    }
   }
 
   await admin.rpc('recalculate_offer_scores');

@@ -5,6 +5,8 @@ import { condOf } from '@/lib/scoring';
 import { fmt } from '@/lib/models';
 import ModerareOferta from '@/components/ModerareOferta';
 import ModerareDraft from '@/components/ModerareDraft';
+import RiscAutenticitateBadge from '@/components/RiscAutenticitateBadge';
+import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 
 export default async function AdminOfertePage() {
   const supabase = await createClient();
@@ -26,7 +28,7 @@ export default async function AdminOfertePage() {
   const [{ data: pending }, { data: drafts }] = await Promise.all([
     supabase
       .from('offers')
-      .select('id,model_code,title,price,year,km,cond,country,url,note,created_at')
+      .select('id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii')
       .eq('moderation', 'pending')
       .order('created_at', { ascending: true }),
     supabase
@@ -87,6 +89,10 @@ export default async function AdminOfertePage() {
             </a>
           )}
           {o.note && <div style={{ fontSize: 14, color: 'var(--inksoft)', marginTop: 6 }}>{o.note}</div>}
+          <RiscAutenticitateBadge
+            scor={o.risc_autenticitate_scor}
+            detalii={o.risc_autenticitate_detalii as RaportAutenticitate | null}
+          />
           <div style={{ marginTop: 10 }}>
             <ModerareOferta offerId={o.id} />
           </div>

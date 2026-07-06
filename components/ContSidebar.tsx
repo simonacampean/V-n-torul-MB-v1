@@ -21,6 +21,7 @@ const LINKS = [
 const ADMIN_LINKS = [
   { href: '/admin', label: 'Dashboard admin' },
   { href: '/admin/oferte', label: 'Moderare anunțuri' },
+  { href: '/admin/agenti', label: 'AI Agents' },
   { href: '/admin/publicitate', label: 'Publicitate' },
   { href: '/admin/modele', label: 'Modele țintă' },
   { href: '/admin/platforme', label: 'Platforme' },

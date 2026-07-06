@@ -282,6 +282,7 @@ footer.site .in {
 .status { font-size: 11px; padding: 5px 9px; border-radius: 2px; border: 1px solid; font-family: var(--font-mono); }
 .status.done { border-color: var(--green); color: var(--green); }
 .status.todo { border-color: var(--red); color: var(--red); }
+.status.warn { border-color: var(--amber); color: var(--amber); }
 
 .btn {
   font-family: var(--font-mono); font-size: 11px; font-weight: 600;

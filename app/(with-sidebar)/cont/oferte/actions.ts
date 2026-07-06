@@ -9,6 +9,8 @@ import { parsePrice } from '@/lib/scoring';
 import { extractAgentReport, validateOffers, planOfferImport } from '@/lib/offers';
 import { applyImportPlan } from '@/lib/server/offers-import';
 import { trackEvent } from '@/lib/track';
+import { runAgent } from '@/lib/agents/orchestrator';
+import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -98,23 +100,45 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
   } = await supabase.auth.getUser();
   if (!user) return { error: 'Neautentificat.' };
 
-  const { error } = await supabase.from('offers').insert({
-    model_code: parsed.data.model_code,
-    title: parsed.data.title,
-    price,
-    url: parsed.data.url || null,
-    year: parsePrice(parsed.data.year),
-    km: parsePrice(parsed.data.km),
-    cond: parsed.data.cond,
-    options: parsed.data.options,
-    country: parsed.data.country.toUpperCase(),
-    note: parsed.data.note || null,
-    submitted_by: user.id,
-    moderation: 'pending',
-  });
+  const note = parsed.data.note || null;
+  const { data: insertedRow, error } = await supabase
+    .from('offers')
+    .insert({
+      model_code: parsed.data.model_code,
+      title: parsed.data.title,
+      price,
+      url: parsed.data.url || null,
+      year: parsePrice(parsed.data.year),
+      km: parsePrice(parsed.data.km),
+      cond: parsed.data.cond,
+      options: parsed.data.options,
+      country: parsed.data.country.toUpperCase(),
+      note,
+      submitted_by: user.id,
+      moderation: 'pending',
+    })
+    .select('id')
+    .single();
   if (error) {
     await trackEvent('form_error', { action: 'submit_native_offer', message: error.message });
     return { error: error.message };
+  }
+
+  // Verificare automată de autenticitate (Detectivul de Autenticitate) — best-effort,
+  // nu blochează publicarea anunțului dacă agentul eșuează (ex. cheie API neconfigurată).
+  if (note?.trim()) {
+    const result = await runAgent<{ descriere: string }, RaportAutenticitate>(
+      'detectiv-autenticitate',
+      { descriere: note },
+      { triggerSource: 'anunt_nativ', relatedOfferId: insertedRow.id }
+    );
+    if (result.ok) {
+      const admin = createAdminClient();
+      await admin
+        .from('offers')
+        .update({ risc_autenticitate_scor: result.data.scor_risc, risc_autenticitate_detalii: result.data })
+        .eq('id', insertedRow.id);
+    }
   }
 
   await trackEvent('native_offer_submitted', { model_code: parsed.data.model_code });
