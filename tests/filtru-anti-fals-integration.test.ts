@@ -35,16 +35,20 @@ function ofertaValidata(overrides: Partial<ValidatedOffer> = {}): ValidatedOffer
 describe.runIf(canRun)('Filtru Anti-Fals — integrare în applyImportPlan (I-02)', () => {
   const admin = createClient(url!, serviceKey!, { auth: { autoRefreshToken: false, persistSession: false } });
   let userId: string;
+  // Curățare pe id-uri exacte capturate direct în teste — NU printr-un nou
+  // SELECT ilike în afterEach (acela a lăsat rânduri orfane în agent_runs
+  // într-o rulare anterioară: related_offer_id ajunge NULL prin ON DELETE
+  // SET NULL dacă offers e șters înainte ca delete-ul pe agent_runs să prindă
+  // id-ul corect — cu id-ul cunoscut dinainte, ordinea nu mai contează).
+  const createdOfferIds: string[] = [];
 
   afterEach(async () => {
-    for (const marker of [TITLE_MARKER, TITLE_MARKER_CLEAN]) {
-      const { data: offers } = await admin.from('offers').select('id').ilike('title', `${marker}%`);
-      const ids = offers?.map((o) => o.id) ?? [];
-      if (ids.length) {
-        await admin.from('agent_runs').delete().in('related_offer_id', ids);
-        await admin.from('offer_price_history').delete().in('offer_id', ids);
-      }
-      await admin.from('offers').delete().ilike('title', `${marker}%`);
+    if (createdOfferIds.length) {
+      const { error: e1 } = await admin.from('agent_runs').delete().in('related_offer_id', createdOfferIds);
+      const { error: e2 } = await admin.from('offer_price_history').delete().in('offer_id', createdOfferIds);
+      const { error: e3 } = await admin.from('offers').delete().in('id', createdOfferIds);
+      if (e1 || e2 || e3) throw e1 ?? e2 ?? e3;
+      createdOfferIds.length = 0;
     }
     if (userId) await admin.auth.admin.deleteUser(userId);
   });
@@ -67,6 +71,7 @@ describe.runIf(canRun)('Filtru Anti-Fals — integrare în applyImportPlan (I-02
       .ilike('title', `${TITLE_MARKER}%`)
       .single();
     expect(offer).not.toBeNull();
+    createdOfferIds.push(offer!.id);
 
     const { data: run } = await admin
       .from('agent_runs')
@@ -110,6 +115,7 @@ describe.runIf(canRun)('Filtru Anti-Fals — integrare în applyImportPlan (I-02
       .ilike('title', `${TITLE_MARKER_CLEAN}%`)
       .single();
     expect(offer!.autenticitate_pachet).toBe('Original');
+    createdOfferIds.push(offer!.id);
 
     // Scurtcircuitul e intern agentului (fără apel Claude) — orchestratorul tot
     // loghează rularea, dar mereu ca succes, indiferent de ANTHROPIC_API_KEY.
