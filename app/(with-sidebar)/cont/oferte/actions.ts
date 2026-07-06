@@ -12,6 +12,7 @@ import { trackEvent } from '@/lib/track';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
+import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -144,15 +145,40 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
 
   // Filtru Anti-Fals (Replica Detector) — la fel de best-effort; agentul însuși
   // scurtcircuitează fără apel Claude dacă nu găsește nicio insignă flagship/sintagmă suspectă.
+  const anFabricatie = parsePrice(parsed.data.year);
+  let verdictFiltru: FiltruAntiFalsOutput | null = null;
   {
     const filtruInput: FiltruAntiFalsInput = {
       modelCode: parsed.data.model_code,
       titlu: parsed.data.title,
       text: note,
       pret: price,
-      an: parsePrice(parsed.data.year),
+      an: anFabricatie,
     };
     const result = await runAgent<FiltruAntiFalsInput, FiltruAntiFalsOutput>('filtru-anti-fals', filtruInput, {
+      triggerSource: 'anunt_nativ',
+      relatedOfferId: insertedRow.id,
+    });
+    if (result.ok) {
+      verdictFiltru = result.data;
+      const admin = createAdminClient();
+      await admin
+        .from('offers')
+        .update({ autenticitate_pachet: result.data.autenticitate_pachet, filtru_anti_fals_detalii: result.data })
+        .eq('id', insertedRow.id);
+    }
+  }
+
+  // Ghidul RAR (Auto de Epocă & Traducere) — best-effort; reutilizează verdictul Filtru
+  // Anti-Fals de mai sus (dacă a reușit) ca fapt determinist, nu recalculează originalitatea.
+  {
+    const ghidInput: GhidRarInput = {
+      titlu: parsed.data.title,
+      text: note,
+      anFabricatie,
+      verdictFiltruAntiFals: verdictFiltru,
+    };
+    const result = await runAgent<GhidRarInput, GhidRarOutput>('ghid-rar', ghidInput, {
       triggerSource: 'anunt_nativ',
       relatedOfferId: insertedRow.id,
     });
@@ -160,7 +186,7 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
       const admin = createAdminClient();
       await admin
         .from('offers')
-        .update({ autenticitate_pachet: result.data.autenticitate_pachet, filtru_anti_fals_detalii: result.data })
+        .update({ eligibilitate_rar: result.data.eligibilitate_rar, rezumat_ro: result.data.rezumat_ro })
         .eq('id', insertedRow.id);
     }
   }

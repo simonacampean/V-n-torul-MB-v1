@@ -61,6 +61,14 @@ interface DescriereSnapshot {
   at: string;
 }
 
+/** Plafon de siguranță: fiecare rulare a Negociatorului din Umbră poate lua
+ * 10-50s (apel Claude cu tool-use) — dacă multe anunțuri se schimbă în
+ * aceeași rulare (POST), procesarea secvențială le-ar putea depăși pe cele
+ * 60s de maxDuration. Restul rămân pur și simplu pentru rularea programată
+ * următoare (la 6 ore) — price_history/descriere_history sunt deja
+ * actualizate oricum, nimic nu se pierde, doar analiza AI se amână. */
+const MAX_NEGOCIERI_PER_RULARE = 3;
+
 /**
  * Actualizează price_history DOAR când prețul chiar s-a schimbat față de
  * ultima valoare cunoscută — altfel istoricul s-ar umple cu intrări zilnice
@@ -86,6 +94,8 @@ export async function POST(request: NextRequest) {
   let unchanged = 0;
   let skipped = 0;
   let negociereRulata = 0;
+  let negociereAmanata = 0;
+  let negociereIncercata = 0; // include și eșecurile — plafonul limitează ÎNCERCĂRILE, nu doar succesele
 
   for (const { id, price, descriere } of parsed.data.results) {
     const { data: item, error: selErr } = await admin
@@ -130,6 +140,12 @@ export async function POST(request: NextRequest) {
     updated++;
 
     if (areIstoricAnterior) {
+      if (negociereIncercata >= MAX_NEGOCIERI_PER_RULARE) {
+        negociereAmanata++;
+        continue;
+      }
+      negociereIncercata++;
+
       const negociatorInput: NegociatorInput = {
         descriereAnterioara: lastDescriere,
         descriereCurenta: descriere ?? lastDescriere ?? '',
@@ -154,5 +170,5 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  return NextResponse.json({ ok: true, updated, unchanged, skipped, negociereRulata });
+  return NextResponse.json({ ok: true, updated, unchanged, skipped, negociereRulata, negociereAmanata });
 }

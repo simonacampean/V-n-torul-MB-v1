@@ -169,6 +169,46 @@ describe.runIf(canRun)('GET/POST /api/watchlist-recheck', () => {
     expect(data!.trigger_source).toBe('watchlist_recheck');
     expect(['success', 'error']).toContain(data!.status);
   });
+  it('plafonează Negociatorul din Umbră la MAX_NEGOCIERI_PER_RULARE per apel POST (backpressure anti-timeout)', async () => {
+    // 4 itemi, fiecare cu deja un punct de preț anterior — toate 4 se califică
+    // pentru re-analiză de negociere în aceeași rulare, dar plafonul e 3.
+    const items = await Promise.all(
+      [0, 1, 2, 3].map(async (i) => {
+        const { data } = await admin
+          .from('watchlist_items')
+          .insert({
+            user_id: userId,
+            model_code: 'W124',
+            title: `TEST-BACKPRESSURE ${i}`,
+            price: 10000,
+            price_history: [{ price: 10000, at: '2026-01-01' }],
+            cond: '2',
+          })
+          .select('id')
+          .single();
+        return data!.id as string;
+      })
+    );
+
+    try {
+      const res = await POST(
+        makePost(
+          { results: items.map((id, i) => ({ id, price: 9000 - i * 100 })) },
+          `Bearer ${token}`
+        )
+      );
+      expect(res.status).toBe(200);
+      const json = await res.json();
+      expect(json.updated).toBe(4); // preț+istoric actualizate pentru toate 4, indiferent de plafon
+      // negociereAmanata dovedește direct plafonul: e calculat sincron, în același request,
+      // nu depinde de o citire ulterioară din DB (spre deosebire de un count() separat pe
+      // agent_runs, care s-a dovedit fragil sub concurență mare — vezi commit-ul următor).
+      expect(json.negociereAmanata).toBe(1); // doar al 4-lea rămâne amânat
+    } finally {
+      await admin.from('agent_runs').delete().in('related_watchlist_item_id', items);
+      await admin.from('watchlist_items').delete().in('id', items);
+    }
+  });
 });
 
 if (!canRun) {
