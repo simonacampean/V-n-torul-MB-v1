@@ -4,6 +4,7 @@
 // modificări.
 import type { AgentDefinition } from './types';
 import { detectivAutenticitateAgent } from './detectiv-autenticitate';
+import { trendScoutAgent } from './trend-scout';
 
 // Registrul e intenționat „type-erased" (any) — fiecare agent are propriul
 // input/output distinct; siguranța de tip reală se aplică la punctul de
@@ -11,6 +12,7 @@ import { detectivAutenticitateAgent } from './detectiv-autenticitate';
 // orchestrator.ts, nu prin tipul de stocare din acest obiect.
 export const AGENT_REGISTRY: Record<string, AgentDefinition<any, any>> = {
   [detectivAutenticitateAgent.id]: detectivAutenticitateAgent,
+  [trendScoutAgent.id]: trendScoutAgent,
 };
 
 export function listAgents(): AgentDefinition[] {
