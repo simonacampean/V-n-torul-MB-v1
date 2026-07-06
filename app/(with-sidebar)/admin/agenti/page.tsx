@@ -2,6 +2,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { listAgents } from '@/lib/agents/registry';
 import { fmt } from '@/lib/models';
+import type { TrendScoutReport } from '@/lib/agents/trend-scout';
 
 interface RunRow {
   agent_id: string;
@@ -16,7 +17,11 @@ const TRIGGER_LABELS: Record<string, string> = {
   import_oferte: 'Import raport/draft',
   anunt_nativ: 'Anunț nativ',
   manual_admin: 'Test manual (admin)',
+  forum_ingest: 'Ingestie forumuri',
 };
+
+const DIRECTION_LABELS: Record<string, string> = { crescator: 'crescător', stabil: 'stabil', scazator: 'scăzător' };
+const SENTIMENT_LABELS: Record<string, string> = { pozitiv: 'pozitiv', negativ: 'negativ', mixt: 'mixt' };
 
 /** AD-05 (nou) — panou de observabilitate pentru agenții AI ai platformei.
  * Sursa de adevăr e tabela agent_runs, scrisă exclusiv de orchestrator
@@ -79,6 +84,16 @@ export default async function AdminAgentiPage() {
 
   const recentRuns = runs.slice(0, 25);
 
+  const { data: lastTrendRun } = await supabase
+    .from('agent_runs')
+    .select('output,created_at')
+    .eq('agent_id', 'trend-scout')
+    .eq('status', 'success')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  const trendReport = (lastTrendRun?.output as TrendScoutReport | null)?.raport ?? [];
+
   return (
     <main className="wrap" style={{ paddingTop: 32, paddingBottom: 48 }}>
       <h1 className="page-title">AI Agents</h1>
@@ -135,6 +150,41 @@ export default async function AdminAgentiPage() {
           );
         })}
       </div>
+
+      {lastTrendRun && (
+        <>
+          <div className="seclabel" style={{ marginTop: 28 }}>
+            ▸ Ultimul raport Trend-Scout — {new Date(lastTrendRun.created_at).toLocaleString('ro-RO')}
+          </div>
+          {!trendReport.length && (
+            <div className="empty">Niciun model cu mențiuni suficiente în fereastra analizată încă.</div>
+          )}
+          {trendReport.map((t) => (
+            <article key={t.model_detectat} className="card flat" style={{ marginBottom: 8 }}>
+              <div className="row">
+                <div>
+                  <span className="plate sm">{t.model_detectat}</span>{' '}
+                  <span
+                    className={`chip ${t.alerta_declansata ? 'chilipir' : ''}`}
+                    style={!t.alerta_declansata ? { background: 'var(--paper)', color: 'var(--inksoft)' } : undefined}
+                  >
+                    {DIRECTION_LABELS[t.directie_trend] ?? t.directie_trend}
+                  </span>
+                </div>
+                {t.alerta_declansata && <span className="status todo">alertă: +{t.variatie_procentuala}%</span>}
+              </div>
+              <div className="meta mono" style={{ marginTop: 6 }}>
+                {t.mentiuni_luna_precedenta} → {t.mentiuni_luna_curenta} mențiuni
+                {t.variatie_procentuala != null &&
+                  ` (${t.variatie_procentuala > 0 ? '+' : ''}${t.variatie_procentuala}%)`}
+                {' · sentiment: '}
+                {SENTIMENT_LABELS[t.sentiment_net] ?? t.sentiment_net}
+              </div>
+              <p style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 6 }}>{t.argumente_din_discutii}</p>
+            </article>
+          ))}
+        </>
+      )}
 
       <div className="seclabel" style={{ marginTop: 28 }}>
         ▸ Execuții recente ({recentRuns.length})
