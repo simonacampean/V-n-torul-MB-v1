@@ -3,7 +3,6 @@
 // ANTHROPIC_API_KEY.
 import { describe, it, expect } from 'vitest';
 import { calculeazaVarstaVehicul, ghidRarOutputSchema, ghidRarAgent, type GhidRarInput } from '../lib/agents/ghid-rar';
-import type { FiltruAntiFalsOutput } from '../lib/agents/filtru-anti-fals';
 
 const anCurent = new Date().getFullYear();
 
@@ -18,10 +17,10 @@ describe('calculeazaVarstaVehicul', () => {
 });
 
 describe('ghidRarAgent.run — scurtcircuite determinist (fără ANTHROPIC_API_KEY)', () => {
-  it('vehicul prea tânăr (< 30 ani) ⇒ Neeligibil instant, indiferent de text', async () => {
+  it('vehicul prea tânăr (< 30 ani), FĂRĂ text și fără verdict Filtru ⇒ Neeligibil instant', async () => {
     const input: GhidRarInput = {
       titlu: 'Mercedes W124',
-      text: 'Descriere lungă cu multe detalii tehnice.',
+      text: null,
       anFabricatie: anCurent - 10,
     };
     const result = await ghidRarAgent.run(input);
@@ -29,6 +28,10 @@ describe('ghidRarAgent.run — scurtcircuite determinist (fără ANTHROPIC_API_K
     expect(result.rezumat_ro).toBeNull();
     expect(result.motiv_eligibilitate).toContain('10 ani');
   });
+
+  // NOTĂ: dacă există text SAU un verdict Filtru Anti-Fals, agentul NU mai scurtcircuitează
+  // doar pe baza vârstei — traducerea/rezumatul rămâne util indiferent de eligibilitatea RAR
+  // (vezi tests/ghid-rar-integration.test.ts pentru cazul „tânăr + text real, cu cheie API").
 
   it('vârstă suficientă, dar fără text și fără verdict Filtru ⇒ Incert instant', async () => {
     const input: GhidRarInput = {
@@ -76,21 +79,6 @@ describe('ghidRarOutputSchema', () => {
   });
 });
 
-describe('reutilizarea verdictului Filtru Anti-Fals (determinist, ca fapt de intrare)', () => {
-  it('vehicul tânăr rămâne Neeligibil chiar dacă Filtru Anti-Fals a găsit „Original"', async () => {
-    const verdictFiltru: FiltruAntiFalsOutput = {
-      autenticitate_pachet: 'Original',
-      alerta_frauda_pret: false,
-      nota_explicativa: 'Nimic suspect.',
-      semnale_detectate: [],
-    };
-    const input: GhidRarInput = {
-      titlu: 'Mercedes W201',
-      text: 'Mașină în stare bună.',
-      anFabricatie: anCurent - 5,
-      verdictFiltruAntiFals: verdictFiltru,
-    };
-    const result = await ghidRarAgent.run(input);
-    expect(result.eligibilitate_rar).toBe('Neeligibil');
-  });
-});
+// NOTĂ: cazul „vehicul tânăr + text/verdict Filtru prezent” necesită acum un apel Claude
+// real (traducerea rămâne utilă indiferent de eligibilitate) — acoperit live în
+// tests/ghid-rar-integration.test.ts, nu ca test unitar izolat.

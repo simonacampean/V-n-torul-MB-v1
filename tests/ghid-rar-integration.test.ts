@@ -80,7 +80,7 @@ describe.runIf(canRun)('Ghidul RAR — integrare în applyImportPlan (I-02)', ()
     }
   });
 
-  it('vehicul prea tânăr ⇒ Neeligibil instant, fără niciun apel Claude (scurtcircuit determinist)', async () => {
+  it('vehicul prea tânăr, FĂRĂ text ⇒ Neeligibil instant, fără niciun apel Claude (scurtcircuit determinist)', async () => {
     const { data: created } = await admin.auth.admin.createUser({
       email: `test-ghid-rar-tanar-${Date.now()}@example.com`,
       password: 'TestParola123!',
@@ -93,7 +93,7 @@ describe.runIf(canRun)('Ghidul RAR — integrare în applyImportPlan (I-02)', ()
         ofertaValidata({
           title: `${TITLE_MARKER}-TANAR`,
           year: anCurent - 5,
-          note: 'Mașină în stare bună, fără insigne speciale.',
+          note: null,
         }),
       ],
       toUpdate: [],
