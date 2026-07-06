@@ -95,6 +95,44 @@ describe.runIf(canRun)('runAgent / runPipeline (agent_runs live)', () => {
     expect(result.steps[0].ok).toBe(true);
     expect(result.steps[1].ok).toBe(false);
   });
+
+  it('runAgent salvează related_watchlist_item_id când e specificat (agenți pe date personale, ex. Negociatorul din Umbră)', async () => {
+    const { data: userData, error: userErr } = await admin.auth.admin.createUser({
+      email: `test-orchestrator-${Date.now()}@example.com`,
+      password: 'ParolaDeTest12345!',
+      email_confirm: true,
+    });
+    expect(userErr).toBeNull();
+    const userId = userData!.user!.id;
+
+    const { data: item, error: itemErr } = await admin
+      .from('watchlist_items')
+      .insert({ user_id: userId, model_code: 'W124', title: 'Test orchestrator', price: 9000 })
+      .select('id')
+      .single();
+    expect(itemErr).toBeNull();
+
+    try {
+      const result = await runAgent<{ valoare: number }, { dublu: number }>(
+        'test-echo',
+        { valoare: 4 },
+        { triggerSource: 'watchlist_recheck', relatedWatchlistItemId: item!.id }
+      );
+      expect(result.ok).toBe(true);
+
+      const { data } = await admin
+        .from('agent_runs')
+        .select('related_watchlist_item_id')
+        .eq('agent_id', 'test-echo')
+        .eq('trigger_source', 'watchlist_recheck')
+        .single();
+      expect(data!.related_watchlist_item_id).toBe(item!.id);
+    } finally {
+      await admin.from('agent_runs').delete().eq('trigger_source', 'watchlist_recheck');
+      await admin.from('watchlist_items').delete().eq('id', item!.id);
+      await admin.auth.admin.deleteUser(userId);
+    }
+  });
 });
 
 if (!canRun) {

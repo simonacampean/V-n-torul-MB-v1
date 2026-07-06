@@ -5,6 +5,7 @@
 import type { AgentDefinition } from './types';
 import { detectivAutenticitateAgent } from './detectiv-autenticitate';
 import { trendScoutAgent } from './trend-scout';
+import { negociatorUmbraAgent } from './negociator-umbra';
 
 // Registrul e intenționat „type-erased" (any) — fiecare agent are propriul
 // input/output distinct; siguranța de tip reală se aplică la punctul de
@@ -13,6 +14,7 @@ import { trendScoutAgent } from './trend-scout';
 export const AGENT_REGISTRY: Record<string, AgentDefinition<any, any>> = {
   [detectivAutenticitateAgent.id]: detectivAutenticitateAgent,
   [trendScoutAgent.id]: trendScoutAgent,
+  [negociatorUmbraAgent.id]: negociatorUmbraAgent,
 };
 
 export function listAgents(): AgentDefinition[] {

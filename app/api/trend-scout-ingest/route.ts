@@ -5,6 +5,10 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { TrendScoutReport, ForumPost } from '@/lib/agents/trend-scout';
 
+// Analiza Trend-Scout pe fereastra de 6 luni poate lua peste 30s — implicitul
+// Vercel (10s pe Hobby) ar tăia rularea la mijloc.
+export const maxDuration = 60;
+
 function safeEqual(a: string, b: string): boolean {
   const bufA = Buffer.from(a);
   const bufB = Buffer.from(b);

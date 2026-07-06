@@ -20,6 +20,8 @@ export interface RunAgentOptions {
   triggerSource: string;
   /** Leagă rularea de un anunț anume (offers.id), dacă e cazul — util pentru audit/debugging. */
   relatedOfferId?: string;
+  /** Leagă rularea de un anunț salvat personal (watchlist_items.id) — pt. agenți care operează pe Lista mea. */
+  relatedWatchlistItemId?: string;
 }
 
 async function logRun(params: {
@@ -31,6 +33,7 @@ async function logRun(params: {
   errorMessage?: string;
   durationMs: number;
   relatedOfferId?: string;
+  relatedWatchlistItemId?: string;
 }): Promise<void> {
   try {
     const admin = createAdminClient();
@@ -43,6 +46,7 @@ async function logRun(params: {
       error_message: params.errorMessage ?? null,
       duration_ms: params.durationMs,
       related_offer_id: params.relatedOfferId ?? null,
+      related_watchlist_item_id: params.relatedWatchlistItemId ?? null,
     });
   } catch {
     // intenționat: logarea nu trebuie să blocheze fluxul real al agentului
@@ -69,6 +73,7 @@ export async function runAgent<TInput, TOutput>(
       output,
       durationMs: Date.now() - start,
       relatedOfferId: opts.relatedOfferId,
+      relatedWatchlistItemId: opts.relatedWatchlistItemId,
     });
     return { ok: true, data: output };
   } catch (err) {
@@ -81,6 +86,7 @@ export async function runAgent<TInput, TOutput>(
       errorMessage: message,
       durationMs: Date.now() - start,
       relatedOfferId: opts.relatedOfferId,
+      relatedWatchlistItemId: opts.relatedWatchlistItemId,
     });
     return { ok: false, error: message };
   }

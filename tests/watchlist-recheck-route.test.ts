@@ -65,6 +65,7 @@ describe.runIf(canRun)('GET/POST /api/watchlist-recheck', () => {
   });
 
   afterAll(async () => {
+    await admin.from('agent_runs').delete().in('related_watchlist_item_id', [itemWithUrlId, itemWithoutUrlId]);
     await admin.from('watchlist_items').delete().in('id', [itemWithUrlId, itemWithoutUrlId]);
     await admin.auth.admin.deleteUser(userId);
   });
@@ -125,6 +126,48 @@ describe.runIf(canRun)('GET/POST /api/watchlist-recheck', () => {
     const json = await res.json();
     expect(json.skipped).toBe(1);
     expect(json.updated).toBe(1);
+  });
+
+  it('POST salvează descrierea la prima captură FĂRĂ să declanșeze negocierea (nimic anterior de comparat)', async () => {
+    const res = await POST(
+      makePost(
+        { results: [{ id: itemWithoutUrlId, price: 5000, descriere: 'Mașină în stare foarte bună, fără probleme.' }] },
+        `Bearer ${token}`
+      )
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.updated).toBe(1);
+    expect(json.negociereRulata).toBe(0);
+
+    const { data } = await admin
+      .from('watchlist_items')
+      .select('descriere_history,indice_urgenta_negociere')
+      .eq('id', itemWithoutUrlId)
+      .single();
+    expect(data!.descriere_history).toHaveLength(1);
+    expect(data!.indice_urgenta_negociere).toBeNull();
+  });
+
+  it('POST declanșează Negociatorul din Umbră la a doua schimbare (există deja un punct anterior)', async () => {
+    const res = await POST(
+      makePost(
+        { results: [{ id: itemWithoutUrlId, price: 4500, descriere: 'Trebuie să vând urgent, plec din țară.' }] },
+        `Bearer ${token}`
+      )
+    );
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.updated).toBe(1);
+
+    const { data } = await admin
+      .from('agent_runs')
+      .select('status,related_watchlist_item_id,trigger_source')
+      .eq('agent_id', 'negociator-umbra')
+      .eq('related_watchlist_item_id', itemWithoutUrlId)
+      .single();
+    expect(data!.trigger_source).toBe('watchlist_recheck');
+    expect(['success', 'error']).toContain(data!.status);
   });
 });
 

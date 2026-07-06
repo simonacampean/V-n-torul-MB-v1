@@ -28,6 +28,10 @@ export interface WatchlistItem {
   criteria: Record<string, boolean>;
   price_history: { price: number; at: string }[];
   created_at: string;
+  indice_urgenta_negociere: number | null;
+  schimbari_cheie_negociere: string[] | null;
+  strategie_negociere: string | null;
+  negociere_actualizata_la: string | null;
 }
 
 type Props = { models: TargetModel[]; items: WatchlistItem[] };
@@ -60,6 +64,7 @@ export default function ListaMea({ models, items }: Props) {
   const [priceEditId, setPriceEditId] = useState<string | null>(null);
   const [priceEditValue, setPriceEditValue] = useState('');
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [negociereExpandedId, setNegociereExpandedId] = useState<string | null>(null);
 
   const formVerdict = verdictOf(bandOf[form.model_code] ?? null, parsePrice(form.price), form.cond);
 
@@ -330,6 +335,51 @@ export default function ListaMea({ models, items }: Props) {
               </div>
             )}
             {l.note && <div style={{ fontSize: 14, color: 'var(--inksoft)', marginTop: 6 }}>{l.note}</div>}
+
+            {l.indice_urgenta_negociere != null && (
+              <div style={{ marginTop: 8 }}>
+                <div className="lrow">
+                  <span
+                    className={`chip ${l.indice_urgenta_negociere >= 70 ? 'chilipir' : ''}`}
+                    style={
+                      l.indice_urgenta_negociere < 70
+                        ? { background: 'var(--paper)', color: 'var(--inksoft)' }
+                        : undefined
+                    }
+                  >
+                    Indice urgență vânzător: {l.indice_urgenta_negociere}/100
+                  </span>
+                  <button
+                    type="button"
+                    className="btn"
+                    onClick={() => setNegociereExpandedId(negociereExpandedId === l.id ? null : l.id)}
+                  >
+                    {negociereExpandedId === l.id ? 'Ascunde strategia' : 'Vezi strategia de negociere'}
+                  </button>
+                </div>
+                {negociereExpandedId === l.id && (
+                  <div className="card flat" style={{ marginTop: 6 }}>
+                    {!!l.schimbari_cheie_negociere?.length && (
+                      <ul style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: 'var(--inksoft)' }}>
+                        {l.schimbari_cheie_negociere.map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    )}
+                    {l.strategie_negociere && (
+                      <p style={{ fontSize: 14, marginTop: l.schimbari_cheie_negociere?.length ? 8 : 0 }}>
+                        {l.strategie_negociere}
+                      </p>
+                    )}
+                    {l.negociere_actualizata_la && (
+                      <div className="meta mono" style={{ marginTop: 6 }}>
+                        actualizat {new Date(l.negociere_actualizata_la).toLocaleString('ro-RO')}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
 
             <div className="lrow" style={{ marginTop: 10, marginBottom: -4 }}>
               <span className="meta mono">

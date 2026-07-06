@@ -19,7 +19,9 @@ export default async function ListaMeaPage() {
     getTargetModels(),
     supabase
       .from('watchlist_items')
-      .select('id,model_code,title,price,url,year,km,cond,note,status,criteria,price_history,created_at')
+      .select(
+        'id,model_code,title,price,url,year,km,cond,note,status,criteria,price_history,created_at,indice_urgenta_negociere,schimbari_cheie_negociere,strategie_negociere,negociere_actualizata_la'
+      )
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
   ]);

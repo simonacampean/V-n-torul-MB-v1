@@ -18,6 +18,7 @@ const TRIGGER_LABELS: Record<string, string> = {
   anunt_nativ: 'Anunț nativ',
   manual_admin: 'Test manual (admin)',
   forum_ingest: 'Ingestie forumuri',
+  watchlist_recheck: 'Recheck Lista mea',
 };
 
 const DIRECTION_LABELS: Record<string, string> = { crescator: 'crescător', stabil: 'stabil', scazator: 'scăzător' };
