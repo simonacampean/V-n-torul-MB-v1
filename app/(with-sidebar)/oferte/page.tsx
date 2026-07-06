@@ -6,6 +6,7 @@ import { condOf, trCost, offerTotal, EXC_THRESHOLD } from '@/lib/scoring';
 import { NEG_LABEL } from '@/lib/hunt';
 import { historyCheckLinks } from '@/lib/affiliates';
 import AdSlot from '@/components/AdSlot';
+import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
 
 export async function generateMetadata({
   searchParams,
@@ -37,6 +38,9 @@ interface OfferRow {
   excellent: boolean;
   first_seen: string;
   last_seen: string;
+  buget_reimprospatare_estimat: string | null;
+  detaliere_necesitati: string[] | null;
+  mesaj_atentionare: string | null;
 }
 
 /** P6 — urgență pe date reale: zile de când oferta e urmărită de agent. */
@@ -72,7 +76,9 @@ export default async function OfertePage({
 
   let query = supabase
     .from('offers')
-    .select('id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent,first_seen,last_seen')
+    .select(
+      'id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent,first_seen,last_seen,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare'
+    )
     .eq('status', 'active')
     .eq('moderation', 'approved')
     .order(sort.column, { ascending: sort.ascending, nullsFirst: false })
@@ -255,6 +261,11 @@ export default async function OfertePage({
                     </span>
                   </div>
                   {o.note && <div style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 8 }}>{o.note}</div>}
+                  <CalculatorRestaurareBadge
+                    buget={o.buget_reimprospatare_estimat}
+                    detaliere={o.detaliere_necesitati}
+                    mesaj={o.mesaj_atentionare}
+                  />
                   {!o.history_verified && (
                     <div className="vinlinks mono">
                       Verifică istoricul (raport VIN, ~20–30 €):{' '}

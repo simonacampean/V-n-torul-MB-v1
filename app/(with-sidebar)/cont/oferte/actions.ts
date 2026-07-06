@@ -14,6 +14,7 @@ import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
 import type { ArheologulOptiuniInput, ArheologulOptiuniOutput } from '@/lib/agents/arheologul-optiuni';
+import type { CalculatorRestaurareInput, CalculatorRestaurareOutput } from '@/lib/agents/calculator-restaurare';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -208,6 +209,26 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
           dotari_rare_detectate: result.data.dotari_rare_detectate,
           nota_raritate: result.data.nota_raritate,
           bonus_dotari_rare: result.data.bonus_dotari_rare,
+        })
+        .eq('id', insertedRow.id);
+    }
+  }
+
+  // Calculator de Restaurare — best-effort; rulează doar dacă există note de analizat.
+  if (note?.trim()) {
+    const result = await runAgent<CalculatorRestaurareInput, CalculatorRestaurareOutput>(
+      'calculator-restaurare',
+      { modelCode: parsed.data.model_code, text: note },
+      { triggerSource: 'anunt_nativ', relatedOfferId: insertedRow.id }
+    );
+    if (result.ok) {
+      const admin = createAdminClient();
+      await admin
+        .from('offers')
+        .update({
+          buget_reimprospatare_estimat: result.data.buget_reimprospatare_estimat,
+          detaliere_necesitati: result.data.detaliere_necesitati,
+          mesaj_atentionare: result.data.mesaj_atentionare,
         })
         .eq('id', insertedRow.id);
     }

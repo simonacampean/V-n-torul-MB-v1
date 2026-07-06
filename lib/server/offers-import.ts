@@ -9,6 +9,7 @@ import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
 import type { ArheologulOptiuniInput, ArheologulOptiuniOutput } from '@/lib/agents/arheologul-optiuni';
+import type { CalculatorRestaurareInput, CalculatorRestaurareOutput } from '@/lib/agents/calculator-restaurare';
 
 /** Verificare automată de autenticitate (Detectivul de Autenticitate) — rulează
  * DOAR dacă anunțul are un `note` de analizat, și e strict best-effort: un eșec
@@ -86,6 +87,30 @@ async function verificaArheologulOptiuni(admin: SupabaseClient, offerId: string,
     .eq('id', offerId);
 }
 
+/** Calculator de Restaurare — rulează DOAR dacă anunțul are un `note` de analizat (la fel ca
+ * verificaAutenticitate); e best-effort ca toți ceilalți. */
+async function verificaCalculatorRestaurare(
+  admin: SupabaseClient,
+  offerId: string,
+  input: CalculatorRestaurareInput
+): Promise<void> {
+  if (!input.text?.trim()) return;
+  const result = await runAgent<CalculatorRestaurareInput, CalculatorRestaurareOutput>(
+    'calculator-restaurare',
+    input,
+    { triggerSource: 'import_oferte', relatedOfferId: offerId }
+  );
+  if (!result.ok) return;
+  await admin
+    .from('offers')
+    .update({
+      buget_reimprospatare_estimat: result.data.buget_reimprospatare_estimat,
+      detaliere_necesitati: result.data.detaliere_necesitati,
+      mesaj_atentionare: result.data.mesaj_atentionare,
+    })
+    .eq('id', offerId);
+}
+
 export async function applyImportPlan(
   admin: SupabaseClient,
   plan: ImportPlan,
@@ -144,6 +169,10 @@ export async function applyImportPlan(
         verdictFiltruAntiFals: verdictFiltru,
       });
       await verificaArheologulOptiuni(admin, insertedRow.id, offer.note ?? null);
+      await verificaCalculatorRestaurare(admin, insertedRow.id, {
+        modelCode: offer.model_code,
+        text: offer.note ?? null,
+      });
     }
   }
 

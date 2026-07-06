@@ -9,6 +9,7 @@ import RiscAutenticitateBadge from '@/components/RiscAutenticitateBadge';
 import FiltruAntiFalsBadge from '@/components/FiltruAntiFalsBadge';
 import GhidRarBadge from '@/components/GhidRarBadge';
 import ArheologulOptiuniBadge from '@/components/ArheologulOptiuniBadge';
+import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 
@@ -33,7 +34,7 @@ export default async function AdminOfertePage() {
     supabase
       .from('offers')
       .select(
-        'id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro,dotari_rare_detectate,nota_raritate,bonus_dotari_rare'
+        'id,model_code,title,price,year,km,cond,country,url,note,created_at,risc_autenticitate_scor,risc_autenticitate_detalii,autenticitate_pachet,filtru_anti_fals_detalii,eligibilitate_rar,rezumat_ro,dotari_rare_detectate,nota_raritate,bonus_dotari_rare,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare'
       )
       .eq('moderation', 'pending')
       .order('created_at', { ascending: true }),
@@ -105,6 +106,11 @@ export default async function AdminOfertePage() {
             dotari={o.dotari_rare_detectate}
             nota={o.nota_raritate}
             bonus={o.bonus_dotari_rare}
+          />
+          <CalculatorRestaurareBadge
+            buget={o.buget_reimprospatare_estimat}
+            detaliere={o.detaliere_necesitati}
+            mesaj={o.mesaj_atentionare}
           />
           <div style={{ marginTop: 10 }}>
             <ModerareOferta offerId={o.id} />
