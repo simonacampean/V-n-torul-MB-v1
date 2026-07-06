@@ -11,6 +11,7 @@ const LINKS = [
   { href: '/oferte', label: 'Top oferte' },
   { href: '/cont/oferte/import', label: 'Importă raport agent' },
   { href: '/cont/oferte/publica', label: 'Publică anunț' },
+  { href: '/cont/povestea-mea', label: 'Povestea mea' },
   { href: '/cont/preferinte', label: 'Preferințe & alerte' },
   { href: '/cont/abonament', label: 'Abonament' },
   { href: '/cont/ghid', label: 'Ghid & RO' },
@@ -21,6 +22,7 @@ const LINKS = [
 const ADMIN_LINKS = [
   { href: '/admin', label: 'Dashboard admin' },
   { href: '/admin/oferte', label: 'Moderare anunțuri' },
+  { href: '/admin/povesti', label: 'Moderare povești' },
   { href: '/admin/agenti', label: 'AI Agents' },
   { href: '/admin/publicitate', label: 'Publicitate' },
   { href: '/admin/modele', label: 'Modele țintă' },

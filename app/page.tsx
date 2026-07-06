@@ -3,6 +3,7 @@ import ModelPhoto from '@/components/ModelPhoto';
 import CarPhotoRow from '@/components/CarPhotoRow';
 import Icon from '@/components/Icon';
 import CommunityStats from '@/components/CommunityStats';
+import SuccessStories from '@/components/SuccessStories';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
@@ -23,6 +24,7 @@ export default async function Home() {
             <b>cel mai bun exemplar dintr-un model accesibil</b>.
           </p>
           <CommunityStats />
+          <SuccessStories />
 
           {models.map((m, i) => (
             <div key={m.code}>
