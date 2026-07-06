@@ -11,6 +11,7 @@ import { applyImportPlan } from '@/lib/server/offers-import';
 import { trackEvent } from '@/lib/track';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
+import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 
 export type ImportOffersResult = { error: string } | { ok: true; inserted: number; updated: number; skipped: number };
 
@@ -137,6 +138,29 @@ export async function submitNativeOffer(formData: FormData): Promise<{ error: st
       await admin
         .from('offers')
         .update({ risc_autenticitate_scor: result.data.scor_risc, risc_autenticitate_detalii: result.data })
+        .eq('id', insertedRow.id);
+    }
+  }
+
+  // Filtru Anti-Fals (Replica Detector) — la fel de best-effort; agentul însuși
+  // scurtcircuitează fără apel Claude dacă nu găsește nicio insignă flagship/sintagmă suspectă.
+  {
+    const filtruInput: FiltruAntiFalsInput = {
+      modelCode: parsed.data.model_code,
+      titlu: parsed.data.title,
+      text: note,
+      pret: price,
+      an: parsePrice(parsed.data.year),
+    };
+    const result = await runAgent<FiltruAntiFalsInput, FiltruAntiFalsOutput>('filtru-anti-fals', filtruInput, {
+      triggerSource: 'anunt_nativ',
+      relatedOfferId: insertedRow.id,
+    });
+    if (result.ok) {
+      const admin = createAdminClient();
+      await admin
+        .from('offers')
+        .update({ autenticitate_pachet: result.data.autenticitate_pachet, filtru_anti_fals_detalii: result.data })
         .eq('id', insertedRow.id);
     }
   }

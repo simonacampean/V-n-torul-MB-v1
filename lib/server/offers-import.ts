@@ -6,6 +6,7 @@ import type { SupabaseClient } from '@supabase/supabase-js';
 import { fingerprintOf, type ImportPlan } from '@/lib/offers';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
+import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 
 /** Verificare automată de autenticitate (Detectivul de Autenticitate) — rulează
  * DOAR dacă anunțul are un `note` de analizat, și e strict best-effort: un eșec
@@ -22,6 +23,21 @@ async function verificaAutenticitate(admin: SupabaseClient, offerId: string, not
   await admin
     .from('offers')
     .update({ risc_autenticitate_scor: result.data.scor_risc, risc_autenticitate_detalii: result.data })
+    .eq('id', offerId);
+}
+
+/** Filtru Anti-Fals (Replica Detector) — la fel de best-effort ca verificaAutenticitate;
+ * rulează pe fiecare anunț importat (agentul însuși scurtcircuitează, fără apel Claude,
+ * dacă nu găsește nicio insignă flagship sau sintagmă suspectă). */
+async function verificaFiltruAntiFals(admin: SupabaseClient, offerId: string, input: FiltruAntiFalsInput): Promise<void> {
+  const result = await runAgent<FiltruAntiFalsInput, FiltruAntiFalsOutput>('filtru-anti-fals', input, {
+    triggerSource: 'import_oferte',
+    relatedOfferId: offerId,
+  });
+  if (!result.ok) return;
+  await admin
+    .from('offers')
+    .update({ autenticitate_pachet: result.data.autenticitate_pachet, filtru_anti_fals_detalii: result.data })
     .eq('id', offerId);
 }
 
@@ -69,6 +85,13 @@ export async function applyImportPlan(
     if (!insErr) {
       inserted++;
       await verificaAutenticitate(admin, insertedRow.id, offer.note ?? null);
+      await verificaFiltruAntiFals(admin, insertedRow.id, {
+        modelCode: offer.model_code,
+        titlu: offer.title,
+        text: offer.note ?? null,
+        pret: offer.price,
+        an: offer.year ?? null,
+      });
     }
   }
 
