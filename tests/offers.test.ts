@@ -26,9 +26,10 @@ describe('extractAgentReport — extrage blocul JSON din text liber (I-02)', () 
     const result = extractAgentReport('{"generated":"2026-07-03"}');
     expect('error' in result).toBe(true);
   });
-  it('respinge offers gol', () => {
+  it('acceptă offers gol (rutina programată trebuie să poată trimite un heartbeat fără oferte noi — validarea "gol" e responsabilitatea fluxurilor consumatoare, nu a parsării)', () => {
     const result = extractAgentReport('{"offers":[]}');
-    expect('error' in result).toBe(true);
+    if ('error' in result) throw new Error('nu ar trebui să eșueze');
+    expect(result.offers).toHaveLength(0);
   });
 });
 

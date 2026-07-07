@@ -34,6 +34,7 @@ export async function importOffersReport(text: string): Promise<ImportOffersResu
 
   const report = extractAgentReport(text);
   if ('error' in report) return { error: report.error };
+  if (!report.offers.length) return { error: 'Raportul nu conține nicio ofertă.' };
 
   const { models } = await getTargetModels();
   const { valid, skipped: invalidSkipped } = validateOffers(

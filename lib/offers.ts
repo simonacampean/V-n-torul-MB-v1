@@ -41,11 +41,7 @@ export function extractAgentReport(text: string): { generated?: string; offers: 
   if (!parsed || typeof parsed !== 'object' || !Array.isArray((parsed as { offers?: unknown }).offers)) {
     return { error: 'Format invalid — lipsește array-ul "offers".' };
   }
-  const report = parsed as { generated?: string; offers: unknown[] };
-  if (!report.offers.length) {
-    return { error: 'Raportul nu conține nicio ofertă.' };
-  }
-  return report;
+  return parsed as { generated?: string; offers: unknown[] };
 }
 
 /** Validează + normalizează ofertele brute (v5: filtrul din A.importAgent). */

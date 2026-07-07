@@ -56,6 +56,25 @@ describe.runIf(canRun)('POST /api/agent-report', () => {
     expect(res.status).toBe(400);
   });
 
+  it('acceptă offers:[] cu token corect ⇒ 200 (heartbeat obligatoriu al rutinei programate, chiar fără oferte noi găsite)', async () => {
+    const res = await POST(makeRequest('{"generated":"2026-07-03","offers":[]}', `Bearer ${token}`));
+    expect(res.status).toBe(200);
+    const json = await res.json();
+    expect(json.ok).toBe(true);
+    expect(json.offersReceived).toBe(0);
+    expect(json.autoInserted).toBe(0);
+    expect(json.deferredForManualReview).toBe(0);
+
+    const { data: drafts } = await admin
+      .from('agent_report_drafts')
+      .select('id,status')
+      .eq('generated_at', '2026-07-03')
+      .order('created_at', { ascending: false })
+      .limit(1);
+    createdDraftIds.push(drafts![0].id);
+    expect(drafts![0].status).toBe('imported'); // nimic de procesat ⇒ draftul se consideră rezolvat instant
+  });
+
   it('anunț fără text de analizat ⇒ auto-aprobat instant (nimic suspect posibil)', async () => {
     const title = `TEST-AGENT-REPORT fără note ${Date.now()}`;
     createdOfferTitles.push(title);
