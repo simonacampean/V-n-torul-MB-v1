@@ -225,18 +225,36 @@ async function analizeazaTrenduri(client: Anthropic, fragments: ParsedFragment[]
 
   const response = await client.messages.create({
     model: MODEL,
-    max_tokens: 4096,
+    // Analiza acoperă până la 6 modele într-un singur apel (nu unul per
+    // model) — plafonul de mai jos a fost mărit după un eșec real în
+    // producție unde tool_use-ul a fost trunchiat (stop_reason: 'max_tokens')
+    // pentru un raport cu mai multe modele calificate simultan.
+    max_tokens: 8192,
     system: buildSystemPrompt(trends),
     tools: [SUBMIT_REPORT_TOOL],
+    // Forțează apelul direct al tool-ului — fără asta, modelul poate emite
+    // întâi un bloc de text preambul (raționament), care consumă din
+    // max_tokens ÎNAINTE de tool_use și poate trunchia JSON-ul rezultatului.
+    tool_choice: { type: 'tool', name: 'submit_report' },
     messages: [{ role: 'user', content: fragmentePerModel }],
   });
 
   const submitCall = response.content.find(
     (b): b is Anthropic.ToolUseBlock => b.type === 'tool_use' && b.name === 'submit_report'
   );
-  if (!submitCall) throw new Error('Agentul nu a apelat submit_report.');
+  if (!submitCall) {
+    if (response.stop_reason === 'max_tokens') {
+      throw new Error('Răspunsul agentului a fost trunchiat (max_tokens) înainte de a apela submit_report.');
+    }
+    throw new Error('Agentul nu a apelat submit_report.');
+  }
 
-  return trendScoutReportSchema.parse(submitCall.input);
+  const parsed = trendScoutReportSchema.safeParse(submitCall.input);
+  if (!parsed.success) {
+    const detaliu = response.stop_reason === 'max_tokens' ? ' (răspuns trunchiat: max_tokens)' : '';
+    throw new Error(`Raportul Trend-Scout nu respectă formatul așteptat${detaliu}: ${parsed.error.issues[0]?.message ?? 'eroare necunoscută'}`);
+  }
+  return parsed.data;
 }
 
 export interface TrendScoutInput {
