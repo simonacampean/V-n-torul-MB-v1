@@ -4,6 +4,7 @@ import { listAgents } from '@/lib/agents/registry';
 import { fmt } from '@/lib/models';
 import type { TrendScoutReport } from '@/lib/agents/trend-scout';
 import { PIPELINES, type Pipeline } from '@/lib/agent-heartbeat';
+import EmptyState from '@/components/EmptyState';
 
 const PIPELINE_LABELS: Record<Pipeline, string> = {
   agent_report: 'Oferte noi (Partea A)',
@@ -221,7 +222,7 @@ export default async function AdminAgentiPage() {
             ▸ Ultimul raport Trend-Scout — {new Date(lastTrendRun.created_at).toLocaleString('ro-RO')}
           </div>
           {!trendReport.length && (
-            <div className="empty">Niciun model cu mențiuni suficiente în fereastra analizată încă.</div>
+            <EmptyState>Niciun model cu mențiuni suficiente în fereastra analizată încă.</EmptyState>
           )}
           {trendReport.map((t) => (
             <article key={t.model_detectat} className="card flat" style={{ marginBottom: 8 }}>
@@ -253,7 +254,7 @@ export default async function AdminAgentiPage() {
       <div className="seclabel" style={{ marginTop: 28 }}>
         ▸ Execuții recente ({recentRuns.length})
       </div>
-      {!recentRuns.length && <div className="empty">Niciun agent nu a rulat încă.</div>}
+      {!recentRuns.length && <EmptyState>Niciun agent nu a rulat încă.</EmptyState>}
       {recentRuns.map((r, i) => (
         <article key={i} className="card flat" style={{ padding: 12, marginBottom: 8 }}>
           <div className="row">

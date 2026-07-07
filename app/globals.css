@@ -421,6 +421,18 @@ footer.site .in {
 }
 .skeleton-card { border-left-color: var(--linesoft); }
 
+/* Polish — reveal la scroll (Intersection Observer, vezi RevealOnScroll.tsx).
+   Discret intenționat: 14px deplasare, 0.4s — o confirmare că pagina „respiră",
+   nu un efect de prezentare. Oprit complet de prefers-reduced-motion (regula
+   globală de mai sus). */
+.reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.4s ease, transform 0.4s ease; }
+.reveal.visible { opacity: 1; transform: translateY(0); }
+
+/* Deschidere fluidă a meniului global (SiteMenu) — scurt, ca să nu pară lent
+   la un meniu folosit frecvent. */
+@keyframes dropdown-in { from { opacity: 0; transform: translateY(-6px) scale(0.98); } to { opacity: 1; transform: translateY(0) scale(1); } }
+.dropdown-in { animation: dropdown-in 0.15s ease; transform-origin: top left; }
+
 /* P6 — confirmare vizuală explicită la acțiuni cheie (nu doar refresh tăcut) */
 @keyframes fade-in-up { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 .confirm-added {

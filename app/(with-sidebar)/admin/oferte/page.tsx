@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { condOf } from '@/lib/scoring';
 import { fmt } from '@/lib/models';
+import EmptyState from '@/components/EmptyState';
 import ModerareOferta from '@/components/ModerareOferta';
 import ModerareDraft from '@/components/ModerareDraft';
 import RiscAutenticitateBadge from '@/components/RiscAutenticitateBadge';
@@ -64,7 +65,7 @@ export default async function AdminOfertePage() {
       <div className="seclabel" style={{ marginTop: 20 }}>
         ▸ Rapoarte de la rutina Claude programată — de aprobat ({(drafts ?? []).length})
       </div>
-      {!drafts?.length && <div className="empty">Niciun raport în așteptare.</div>}
+      {!drafts?.length && <EmptyState>Niciun raport în așteptare.</EmptyState>}
       {(drafts ?? []).map((d) => {
         const payload = d.payload as { offers?: unknown[] };
         const count = Array.isArray(payload?.offers) ? payload.offers.length : 0;
@@ -90,7 +91,7 @@ export default async function AdminOfertePage() {
         agent de siguranță a eșuat) — verifică-le manual mai jos.
       </p>
 
-      {!pending?.length && <div className="empty">Nimic de moderat momentan.</div>}
+      {!pending?.length && <EmptyState>Nimic de moderat momentan.</EmptyState>}
 
       {(pending ?? []).map((o) => (
         <article key={o.id} className="card">
@@ -144,7 +145,7 @@ export default async function AdminOfertePage() {
         „Date insuficiente&rdquo; apare când există mai puțin de 3 anunțuri comparabile (același model,
         an/cilindree/dotări apropiate) — recalculează pe cerere pe măsură ce mai apar oferte noi.
       </p>
-      {!active?.length && <div className="empty">Niciun anunț activ momentan.</div>}
+      {!active?.length && <EmptyState>Niciun anunț activ momentan.</EmptyState>}
       {(active ?? []).map((o) => (
         <article key={o.id} className="card flat" style={{ marginBottom: 8 }}>
           <div className="row">

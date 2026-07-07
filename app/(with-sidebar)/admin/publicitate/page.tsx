@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import PublicitateActions from '@/components/PublicitateActions';
 import SubmitButton from '@/components/SubmitButton';
+import EmptyState from '@/components/EmptyState';
 import { createCampaign } from './actions';
 
 export default async function AdminPublicitatePage({
@@ -88,7 +89,7 @@ export default async function AdminPublicitatePage({
       <div className="seclabel" style={{ marginTop: 24 }}>
         ▸ Campanii ({(campaigns ?? []).length})
       </div>
-      {!campaigns?.length && <div className="empty">Nicio campanie configurată — sloturile afișează fallback AdSense.</div>}
+      {!campaigns?.length && <EmptyState>Nicio campanie configurată — sloturile afișează fallback AdSense.</EmptyState>}
       {(campaigns ?? []).map((c) => (
         <article key={c.id} className="card flat">
           <div className="row">

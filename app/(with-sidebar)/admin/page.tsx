@@ -87,7 +87,7 @@ export default async function AdminDashboardPage() {
           </div>
         </div>
 
-        <div className="card flat">
+        <div className="card flat" style={{ borderLeft: '3px solid var(--green)' }}>
           <div className="seclabel">▸ Anunțuri active</div>
           <div className="score">{fmt(activeOffers ?? 0)}</div>
           <div className="meta mono" style={{ marginTop: 6 }}>
@@ -101,9 +101,9 @@ export default async function AdminDashboardPage() {
           <div className="meta mono" style={{ marginTop: 6 }}>{fmt(notifications30d ?? 0)} în ultimele 30 de zile</div>
         </div>
 
-        <div className="card flat">
+        <div className="card flat" style={{ borderLeft: '3px solid var(--red)' }}>
           <div className="seclabel">▸ Venit lunar estimat</div>
-          <div className="score">{revenue != null ? `${fmt(revenue)} €` : '—'}</div>
+          <div className="score" style={{ color: 'var(--red)' }}>{revenue != null ? `${fmt(revenue)} €` : '—'}</div>
           <div className="meta mono" style={{ marginTop: 6 }}>
             {fmt(monthlyActive)} abonamente lunare · {fmt(yearlyActive)} anuale (amortizate/lună)
           </div>

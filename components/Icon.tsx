@@ -3,6 +3,8 @@ const PATHS: Record<string, string> = {
   camera:
     'M6.5 3 5.4 4.5H3a1 1 0 0 0-1 1v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8a1 1 0 0 0-1-1h-2.4L11.5 3h-5ZM9 7a3 3 0 1 1 0 6 3 3 0 0 1 0-6Z',
   download: 'M9 2v8.6l2.8-2.8 1.1 1.1L8 13.8l-4.9-4.9 1.1-1.1L7 10.6V2h2ZM3 15h12v1.5H3V15Z',
+  folder:
+    'M1,4 A1,1 0 0,1 2,3 L6,3 L7.5,5 L16,5 A1,1 0 0,1 17,6 L17,14 A1,1 0 0,1 16,15 L2,15 A1,1 0 0,1 1,14 Z',
 };
 
 /** Set minim de iconițe SVG cu contur consecvent — înlocuiește emoji-ul folosit

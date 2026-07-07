@@ -13,6 +13,8 @@ import {
 } from '@/app/(with-sidebar)/cont/lista/actions';
 import PriceSparkline from '@/components/PriceSparkline';
 import Icon from '@/components/Icon';
+import EmptyState from '@/components/EmptyState';
+import RevealOnScroll from '@/components/RevealOnScroll';
 
 export interface WatchlistItem {
   id: string;
@@ -263,10 +265,16 @@ export default function ListaMea({ models, items }: Props) {
         </select>
       </div>
 
-      {!items.length && <div className="empty">Lista e goală.<br />Fă vânătoarea zilnică și adaugă primul candidat.</div>}
-      {items.length > 0 && !list.length && <div className="empty">Niciun rezultat pentru filtrele curente.</div>}
+      {!items.length && (
+        <EmptyState>
+          Lista e goală.
+          <br />
+          Fă vânătoarea zilnică și adaugă primul candidat.
+        </EmptyState>
+      )}
+      {items.length > 0 && !list.length && <EmptyState>Niciun rezultat pentru filtrele curente.</EmptyState>}
 
-      {list.map((l) => {
+      {list.map((l, idx) => {
         const score = scoreWatchlistItem(l.criteria);
         const checkedCount = CRITERIA.filter((c) => l.criteria?.[c.id]).length;
         const pVal = currentPrice(l.price_history, l.price);
@@ -277,8 +285,8 @@ export default function ListaMea({ models, items }: Props) {
         const dropPct = priceDropPct(l.price_history, l.price);
 
         return (
+          <RevealOnScroll key={l.id} delay={Math.min(idx * 40, 200)}>
           <article
-            key={l.id}
             className="card"
             style={{
               borderLeftColor: isChilipir ? 'var(--red)' : scoreColor(score),
@@ -288,7 +296,7 @@ export default function ListaMea({ models, items }: Props) {
             <div className="row">
               <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
                 <span className="plate sm">{l.model_code}</span>
-                <b style={{ fontSize: 14 }}>{l.title}</b>
+                <b style={{ fontSize: 15 }}>{l.title}</b>
                 {l.url && (
                   <a href={l.url} target="_blank" rel="noopener noreferrer" className="mono" style={{ fontSize: 11, color: 'var(--red)' }}>
                     anunț ↗
@@ -313,9 +321,13 @@ export default function ListaMea({ models, items }: Props) {
               ) : null}
             </div>
 
-            <div className="meta mono" style={{ marginTop: 6 }}>
+            {pVal != null && (
+              <div className="price" style={{ marginTop: 8 }}>
+                {fmt(pVal)} €
+              </div>
+            )}
+            <div className="meta mono" style={{ marginTop: 4 }}>
               {[
-                pVal != null && `${fmt(pVal)} €`,
                 l.year,
                 l.km && `${l.km} km`,
                 `stare ${condOf(l.cond).label.split(' ')[0]}`,
@@ -467,6 +479,7 @@ export default function ListaMea({ models, items }: Props) {
               )}
             </div>
           </article>
+          </RevealOnScroll>
         );
       })}
 

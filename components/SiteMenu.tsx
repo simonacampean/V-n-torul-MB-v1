@@ -64,7 +64,7 @@ export default function SiteMenu() {
         </svg>
       </button>
       {open && (
-        <nav className="sitemenu-drop mono" role="menu">
+        <nav className="sitemenu-drop mono dropdown-in" role="menu">
           {MENU.map((item) => (
             <Link
               key={item.href}

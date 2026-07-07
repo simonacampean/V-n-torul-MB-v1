@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { fmt } from '@/lib/models';
 import { calculeazaEconomie } from '@/lib/success-stories';
 import ModerarePoveste from '@/components/ModerarePoveste';
+import EmptyState from '@/components/EmptyState';
 
 export default async function AdminPovestiPage() {
   const supabase = await createClient();
@@ -41,7 +42,7 @@ export default async function AdminPovestiPage() {
       <div className="seclabel" style={{ marginTop: 20 }}>
         ▸ Povești în așteptare ({(pending ?? []).length})
       </div>
-      {!pending?.length && <div className="empty">Nimic de moderat momentan.</div>}
+      {!pending?.length && <EmptyState>Nimic de moderat momentan.</EmptyState>}
 
       {(pending ?? []).map((p) => {
         const economie = calculeazaEconomie(p.pret_achizitie, p.pret_mediu_piata_atunci);

@@ -8,6 +8,8 @@ import { historyCheckLinks } from '@/lib/affiliates';
 import AdSlot from '@/components/AdSlot';
 import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
 import FairValueBadge from '@/components/FairValueBadge';
+import EmptyState from '@/components/EmptyState';
+import RevealOnScroll from '@/components/RevealOnScroll';
 import type { FairValueEticheta } from '@/lib/agents/evaluator-fair-value';
 
 export async function generateMetadata({
@@ -190,7 +192,7 @@ export default async function OfertePage({
       )}
 
       {!offers.length && (
-        <div className="empty">
+        <EmptyState>
           Nicio ofertă încă.
           {user && (
             <>
@@ -199,7 +201,7 @@ export default async function OfertePage({
               <Link href="/cont/oferte/import">Importă raportul agentului →</Link>
             </>
           )}
-        </div>
+        </EmptyState>
       )}
 
       {shownModels.map((code, gi) => {
@@ -219,22 +221,20 @@ export default async function OfertePage({
               const daysOnMarket = daysAgo(o.first_seen);
               const updatedDays = daysAgo(o.last_seen);
               return (
-                <article key={o.id} className={`offer ${isExc ? 'exc' : ''}`}>
+                <RevealOnScroll key={o.id} delay={Math.min(rank * 40, 200)}>
+                <article className={`offer ${isExc ? 'exc' : ''}`}>
                   <span className={`rank ${isExc ? 'pulse' : ''}`}>
                     #{rank + 1}
                     {isExc ? ' · EXCELENTĂ' : ''}
                   </span>
                   <div className="row" style={{ paddingRight: 70 }}>
                     <div>
-                      <b style={{ fontSize: 14 }}>{o.title}</b>
-                      <div className="meta mono">
-                        {[
-                          `${fmt(o.price)} €`,
-                          o.year,
-                          o.km && `${fmt(o.km)} km`,
-                          condOf(o.cond).label.split(' — ')[0],
-                          o.country,
-                        ]
+                      <div className="mname">{o.title}</div>
+                      <div className="price" style={{ marginTop: 3 }}>
+                        {fmt(o.price)} €
+                      </div>
+                      <div className="meta mono" style={{ marginTop: 3 }}>
+                        {[o.year, o.km && `${fmt(o.km)} km`, condOf(o.cond).label.split(' — ')[0], o.country]
                           .filter(Boolean)
                           .join(' · ')}
                       </div>
@@ -249,33 +249,32 @@ export default async function OfertePage({
                       <small>/100</small>
                     </div>
                   </div>
+                  {/* Semnal primar — ce contează pentru decizie, greutate vizuală plină. */}
                   <div className="obadges">
                     {o.options === 'full' && <span className="ob full">FULL OPTIONS</span>}
                     {o.history_verified && <span className="ob hist">✓ ISTORIC VERIFICAT</span>}
                     <span className="ob">{NEG_LABEL[o.negotiability]}</span>
-                    <span className="ob">aducere: {tc === 0 ? '— (RO)' : `${fmt(tc)} €`}</span>
-                    {total != null && (
-                      <span className="ob">
-                        la cheie: <b>{fmt(total)} €</b>
-                      </span>
-                    )}
-                    <span className="ob">
-                      pe piață de {daysOnMarket === 0 ? 'azi' : `${daysOnMarket} zile`}
-                    </span>
-                    <span className="ob">
-                      actualizat {updatedDays === 0 ? 'azi' : `acum ${updatedDays} zile`}
-                    </span>
-                  </div>
-                  {o.fair_value_eticheta && (
-                    <div style={{ marginTop: 8 }}>
+                    {o.fair_value_eticheta && (
                       <FairValueBadge
                         eticheta={o.fair_value_eticheta}
                         fairValuePret={o.fair_value_pret}
                         deviatieProcentuala={o.fair_value_deviatie_procentuala}
                         compsFolosite={o.fair_value_comps_folosite}
                       />
-                    </div>
-                  )}
+                    )}
+                  </div>
+                  {/* Detalii secundare — logistică/referință, text simplu, nu badge-uri
+                      egale ca greutate cu semnalele de mai sus. */}
+                  <div className="meta mono" style={{ marginTop: 6 }}>
+                    {[
+                      `aducere: ${tc === 0 ? '— (RO)' : `${fmt(tc)} €`}`,
+                      total != null && `la cheie: ${fmt(total)} €`,
+                      `pe piață de ${daysOnMarket === 0 ? 'azi' : `${daysOnMarket} zile`}`,
+                      `actualizat ${updatedDays === 0 ? 'azi' : `acum ${updatedDays} zile`}`,
+                    ]
+                      .filter(Boolean)
+                      .join(' · ')}
+                  </div>
                   {o.note && <div style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 8 }}>{o.note}</div>}
                   <CalculatorRestaurareBadge
                     buget={o.buget_reimprospatare_estimat}
@@ -304,6 +303,7 @@ export default async function OfertePage({
                     </div>
                   )}
                 </article>
+                </RevealOnScroll>
               );
             })}
           </div>
