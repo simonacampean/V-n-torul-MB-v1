@@ -4,6 +4,7 @@ import { createAdminClient } from '@/lib/supabase/admin';
 import { extractAgentReport, validateOffers, planOfferImport } from '@/lib/offers';
 import { applyImportPlan } from '@/lib/server/offers-import';
 import { getTargetModels } from '@/lib/models';
+import { recordHeartbeat } from '@/lib/agent-heartbeat';
 
 // Auto-import-ul rulează agenți AI (Detectiv + Filtru, uneori Ghidul RAR/Arheologul/
 // Calculator) per anunț — poate lua peste 10s; implicitul Vercel (10s pe Hobby) ar
@@ -83,6 +84,12 @@ export async function POST(request: NextRequest) {
   if (deferredForManualReview === 0) {
     await admin.from('agent_report_drafts').update({ status: 'imported' }).eq('id', draftRow.id);
   }
+
+  await recordHeartbeat(admin, 'agent_report', {
+    offersReceived: report.offers.length,
+    autoInserted: result.inserted,
+    autoApproved: result.autoApproved,
+  });
 
   return NextResponse.json({
     ok: true,

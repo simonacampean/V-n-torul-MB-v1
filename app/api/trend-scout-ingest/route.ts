@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { TrendScoutReport, ForumPost } from '@/lib/agents/trend-scout';
+import { recordHeartbeat } from '@/lib/agent-heartbeat';
 
 // Analiza Trend-Scout pe fereastra de 6 luni poate lua peste 30s — implicitul
 // Vercel (10s pe Hobby) ar tăia rularea la mijloc.
@@ -79,6 +80,7 @@ export async function POST(request: NextRequest) {
     .gte('post_date', cutoff.toISOString().slice(0, 10))
     .order('post_date', { ascending: true });
   if (selErr) {
+    await recordHeartbeat(admin, 'trend_scout', { inserted, trendRunOk: false, trendRunError: selErr.message });
     return NextResponse.json({ ok: true, inserted, trendRunOk: false, trendRunError: selErr.message });
   }
 
@@ -88,6 +90,12 @@ export async function POST(request: NextRequest) {
     { posts },
     { triggerSource: 'forum_ingest' }
   );
+
+  await recordHeartbeat(admin, 'trend_scout', {
+    inserted,
+    postsAnalizate: posts.length,
+    trendRunOk: result.ok,
+  });
 
   return NextResponse.json({
     ok: true,

@@ -4,6 +4,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { runAgent } from '@/lib/agents/orchestrator';
 import type { NegociatorInput, NegociatorOutput, PricePoint } from '@/lib/agents/negociator-umbra';
+import { recordHeartbeat } from '@/lib/agent-heartbeat';
 
 // Negociatorul din Umbră poate lua peste 30s pe rulările lui (apel Claude cu
 // tool-use) — implicitul Vercel (10s pe Hobby) ar tăia rularea la mijloc.
@@ -169,6 +170,13 @@ export async function POST(request: NextRequest) {
       }
     }
   }
+
+  await recordHeartbeat(admin, 'watchlist_recheck', {
+    itemsPrimite: parsed.data.results.length,
+    updated,
+    unchanged,
+    skipped,
+  });
 
   return NextResponse.json({ ok: true, updated, unchanged, skipped, negociereRulata, negociereAmanata });
 }

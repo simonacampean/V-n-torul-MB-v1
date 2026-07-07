@@ -3,6 +3,27 @@ import { createClient } from '@/lib/supabase/server';
 import { listAgents } from '@/lib/agents/registry';
 import { fmt } from '@/lib/models';
 import type { TrendScoutReport } from '@/lib/agents/trend-scout';
+import { PIPELINES, type Pipeline } from '@/lib/agent-heartbeat';
+
+const PIPELINE_LABELS: Record<Pipeline, string> = {
+  agent_report: 'Oferte noi (Partea A)',
+  watchlist_recheck: 'Recheck Lista mea (Partea B)',
+  trend_scout: 'Sentiment forumuri (Partea C)',
+};
+
+/** Praguri de alertă — cadența rutinei e la 6 ore, deci 24h fără nicio
+ * rulare reușită înseamnă deja ~4 cicluri ratate (semnal de îngrijorare,
+ * nu neapărat o pană); peste 72h e aproape sigur o integrare ruptă. */
+const ORE_AVERTISMENT = 24;
+const ORE_CRITIC = 72;
+
+function pipelineHealth(lastRunAt: string | null): { nivel: 'ok' | 'avertisment' | 'critic'; oreDeLaUltimaRulare: number | null } {
+  if (!lastRunAt) return { nivel: 'critic', oreDeLaUltimaRulare: null };
+  const ore = (Date.now() - new Date(lastRunAt).getTime()) / (1000 * 60 * 60);
+  if (ore >= ORE_CRITIC) return { nivel: 'critic', oreDeLaUltimaRulare: ore };
+  if (ore >= ORE_AVERTISMENT) return { nivel: 'avertisment', oreDeLaUltimaRulare: ore };
+  return { nivel: 'ok', oreDeLaUltimaRulare: ore };
+}
 
 interface RunRow {
   agent_id: string;
@@ -44,6 +65,9 @@ export default async function AdminAgentiPage() {
       </main>
     );
   }
+
+  const { data: heartbeatRows } = await supabase.from('agent_heartbeats').select('pipeline,last_run_at,last_summary');
+  const heartbeatByPipeline = new Map((heartbeatRows ?? []).map((h) => [h.pipeline as Pipeline, h]));
 
   const agents = listAgents();
   const { data } = await supabase
@@ -104,7 +128,46 @@ export default async function AdminAgentiPage() {
         publică/aprobă nimic singur.
       </p>
 
-      <div className="grid3" style={{ marginTop: 20 }}>
+      <div className="seclabel" style={{ marginTop: 20 }}>
+        ▸ Sănătatea rutinei programate
+      </div>
+      <div className="grid3" style={{ marginTop: 8 }}>
+        {PIPELINES.map((pipeline) => {
+          const hb = heartbeatByPipeline.get(pipeline);
+          const { nivel, oreDeLaUltimaRulare } = pipelineHealth(hb?.last_run_at ?? null);
+          const statusClass = nivel === 'ok' ? 'done' : nivel === 'avertisment' ? 'warn' : 'todo';
+          const eticheta = nivel === 'ok' ? 'la zi' : nivel === 'avertisment' ? 'întârziat' : 'rupt/niciodată';
+
+          return (
+            <div
+              className="card flat"
+              key={pipeline}
+              style={nivel !== 'ok' ? { borderColor: nivel === 'critic' ? 'var(--red)' : 'var(--amber)' } : undefined}
+            >
+              <div className="row">
+                <span className="meta mono" style={{ fontWeight: 600 }}>
+                  {PIPELINE_LABELS[pipeline]}
+                </span>
+                <span className={`status ${statusClass}`}>{eticheta}</span>
+              </div>
+              <div className="meta mono" style={{ marginTop: 8 }}>
+                {hb?.last_run_at
+                  ? `ultima rulare: ${new Date(hb.last_run_at).toLocaleString('ro-RO')} (acum ${
+                      oreDeLaUltimaRulare != null && oreDeLaUltimaRulare < 1
+                        ? '< 1h'
+                        : `${Math.round(oreDeLaUltimaRulare ?? 0)}h`
+                    })`
+                  : 'nicio rulare înregistrată încă'}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="seclabel" style={{ marginTop: 28 }}>
+        ▸ Agenți AI
+      </div>
+      <div className="grid3" style={{ marginTop: 8 }}>
         {agents.map((agent) => {
           const s = statsByAgent.get(agent.id);
           const total = s?.total ?? 0;
