@@ -10,6 +10,7 @@ import { filtruAntiFalsAgent } from './filtru-anti-fals';
 import { ghidRarAgent } from './ghid-rar';
 import { arheologulOptiuniAgent } from './arheologul-optiuni';
 import { calculatorRestaurareAgent } from './calculator-restaurare';
+import { evaluatorFairValueAgent } from './evaluator-fair-value';
 
 // Registrul e intenționat „type-erased" (any) — fiecare agent are propriul
 // input/output distinct; siguranța de tip reală se aplică la punctul de
@@ -23,6 +24,7 @@ export const AGENT_REGISTRY: Record<string, AgentDefinition<any, any>> = {
   [ghidRarAgent.id]: ghidRarAgent,
   [arheologulOptiuniAgent.id]: arheologulOptiuniAgent,
   [calculatorRestaurareAgent.id]: calculatorRestaurareAgent,
+  [evaluatorFairValueAgent.id]: evaluatorFairValueAgent,
 };
 
 export function listAgents(): AgentDefinition[] {

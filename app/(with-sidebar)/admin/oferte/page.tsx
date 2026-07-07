@@ -10,8 +10,11 @@ import FiltruAntiFalsBadge from '@/components/FiltruAntiFalsBadge';
 import GhidRarBadge from '@/components/GhidRarBadge';
 import ArheologulOptiuniBadge from '@/components/ArheologulOptiuniBadge';
 import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
+import FairValueBadge from '@/components/FairValueBadge';
+import RecalculeazaFairValueButton from '@/components/RecalculeazaFairValueButton';
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
+import type { FairValueEticheta } from '@/lib/agents/evaluator-fair-value';
 
 export default async function AdminOfertePage() {
   const supabase = await createClient();
@@ -30,7 +33,7 @@ export default async function AdminOfertePage() {
     );
   }
 
-  const [{ data: pending }, { data: drafts }] = await Promise.all([
+  const [{ data: pending }, { data: drafts }, { data: active }] = await Promise.all([
     supabase
       .from('offers')
       .select(
@@ -43,6 +46,12 @@ export default async function AdminOfertePage() {
       .select('id,generated_at,payload,created_at')
       .eq('status', 'pending')
       .order('created_at', { ascending: true }),
+    supabase
+      .from('offers')
+      .select('id,model_code,title,price,cilindree_litri,fair_value_pret,fair_value_eticheta,fair_value_deviatie_procentuala,fair_value_comps_folosite')
+      .eq('moderation', 'approved')
+      .eq('status', 'active')
+      .order('model_code', { ascending: true }),
   ]);
 
   return (
@@ -124,6 +133,45 @@ export default async function AdminOfertePage() {
           />
           <div style={{ marginTop: 10 }}>
             <ModerareOferta offerId={o.id} />
+          </div>
+        </article>
+      ))}
+
+      <div className="seclabel" style={{ marginTop: 24 }}>
+        ▸ Evaluator de Fair-Value — anunțuri active ({(active ?? []).length})
+      </div>
+      <p className="disclaimer mono">
+        „Date insuficiente&rdquo; apare când există mai puțin de 3 anunțuri comparabile (același model,
+        an/cilindree/dotări apropiate) — recalculează pe cerere pe măsură ce mai apar oferte noi.
+      </p>
+      {!active?.length && <div className="empty">Niciun anunț activ momentan.</div>}
+      {(active ?? []).map((o) => (
+        <article key={o.id} className="card flat" style={{ marginBottom: 8 }}>
+          <div className="row">
+            <div>
+              <span className="plate sm">{o.model_code}</span> <b>{o.title}</b>
+            </div>
+            <div className="meta mono">{fmt(o.price)} €</div>
+          </div>
+          <div className="meta mono" style={{ marginTop: 6 }}>
+            cilindree estimată: {o.cilindree_litri != null ? `${o.cilindree_litri}L` : '—'}
+          </div>
+          <div style={{ marginTop: 8 }}>
+            {o.fair_value_eticheta ? (
+              <FairValueBadge
+                eticheta={o.fair_value_eticheta as FairValueEticheta}
+                fairValuePret={o.fair_value_pret}
+                deviatieProcentuala={o.fair_value_deviatie_procentuala}
+                compsFolosite={o.fair_value_comps_folosite}
+              />
+            ) : (
+              <span className="meta mono">
+                date insuficiente ({o.fair_value_comps_folosite ?? 0}/3 comps)
+              </span>
+            )}
+          </div>
+          <div style={{ marginTop: 10 }}>
+            <RecalculeazaFairValueButton offerId={o.id} />
           </div>
         </article>
       ))}

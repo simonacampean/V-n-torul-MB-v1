@@ -379,6 +379,17 @@ footer.site .in {
 .ob.exc { background: var(--green); color: #fff; border-color: var(--green); }
 .obreak { font-family: var(--font-mono); font-size: 10px; color: var(--plateedge); margin-top: 6px; }
 
+/* Evaluator de Fair-Value — etichetă pe scală de 5 trepte (deviație vs. preț
+   de referință calculat din comps). Progresie verde → galben → roșu; puls
+   (reutilizează pulse-glow, definit mai jos) doar pe „Foarte Ieftin", cea mai
+   rară și mai valoroasă etichetă. */
+.fvbadge { font-family: var(--font-mono); font-size: 11px; font-weight: 600; padding: 4px 9px; border-radius: 2px; border: 1px solid; display: inline-block; }
+.fvbadge.foarte-ieftin { background: var(--green); color: #fff; border-color: var(--green); }
+.fvbadge.ieftin { background: #E4F0EA; color: var(--green); border-color: #BFDCCB; }
+.fvbadge.moderat { background: #F5EDDA; color: var(--amber); border-color: #E4D4A8; }
+.fvbadge.scump { background: #F7E3E4; color: var(--red); border-color: #EAC0C3; }
+.fvbadge.foarte-scump { background: var(--red); color: #fff; border-color: var(--red); }
+
 /* P2 — credibilitate: disclaimer discret, dar chiar lângă preț/scor */
 .disclaimer {
   font-size: 11px; color: var(--plateedge); max-width: 760px; margin-top: 6px; line-height: 1.5;
@@ -392,6 +403,7 @@ footer.site .in {
 }
 .rank.pulse { animation: pulse-glow 2.2s ease-in-out infinite; }
 .chip.chilipir { animation: pulse-glow 2.2s ease-in-out infinite; }
+.fvbadge.foarte-ieftin { animation: pulse-glow 2.2s ease-in-out infinite; }
 
 /* P3 — viteză percepută: feedback instant la atingere pe acțiuni principale */
 .btn, .offer, .statcard, a.gal {

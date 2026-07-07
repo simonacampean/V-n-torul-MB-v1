@@ -7,6 +7,8 @@ import { NEG_LABEL } from '@/lib/hunt';
 import { historyCheckLinks } from '@/lib/affiliates';
 import AdSlot from '@/components/AdSlot';
 import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
+import FairValueBadge from '@/components/FairValueBadge';
+import type { FairValueEticheta } from '@/lib/agents/evaluator-fair-value';
 
 export async function generateMetadata({
   searchParams,
@@ -41,6 +43,10 @@ interface OfferRow {
   buget_reimprospatare_estimat: string | null;
   detaliere_necesitati: string[] | null;
   mesaj_atentionare: string | null;
+  fair_value_pret: number | null;
+  fair_value_eticheta: FairValueEticheta | null;
+  fair_value_deviatie_procentuala: number | null;
+  fair_value_comps_folosite: number | null;
 }
 
 /** P6 — urgență pe date reale: zile de când oferta e urmărită de agent. */
@@ -77,7 +83,7 @@ export default async function OfertePage({
   let query = supabase
     .from('offers')
     .select(
-      'id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent,first_seen,last_seen,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare'
+      'id,model_code,title,price,year,km,cond,options,history_verified,negotiability,country,note,url,score,excellent,first_seen,last_seen,buget_reimprospatare_estimat,detaliere_necesitati,mesaj_atentionare,fair_value_pret,fair_value_eticheta,fair_value_deviatie_procentuala,fair_value_comps_folosite'
     )
     .eq('status', 'active')
     .eq('moderation', 'approved')
@@ -260,6 +266,16 @@ export default async function OfertePage({
                       actualizat {updatedDays === 0 ? 'azi' : `acum ${updatedDays} zile`}
                     </span>
                   </div>
+                  {o.fair_value_eticheta && (
+                    <div style={{ marginTop: 8 }}>
+                      <FairValueBadge
+                        eticheta={o.fair_value_eticheta}
+                        fairValuePret={o.fair_value_pret}
+                        deviatieProcentuala={o.fair_value_deviatie_procentuala}
+                        compsFolosite={o.fair_value_comps_folosite}
+                      />
+                    </div>
+                  )}
                   {o.note && <div style={{ fontSize: 13, color: 'var(--inksoft)', marginTop: 8 }}>{o.note}</div>}
                   <CalculatorRestaurareBadge
                     buget={o.buget_reimprospatare_estimat}

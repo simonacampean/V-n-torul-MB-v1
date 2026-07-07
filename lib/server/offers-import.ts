@@ -11,6 +11,12 @@ import type { FiltruAntiFalsInput, FiltruAntiFalsOutput } from '@/lib/agents/fil
 import type { GhidRarInput, GhidRarOutput } from '@/lib/agents/ghid-rar';
 import type { ArheologulOptiuniInput, ArheologulOptiuniOutput } from '@/lib/agents/arheologul-optiuni';
 import type { CalculatorRestaurareInput, CalculatorRestaurareOutput } from '@/lib/agents/calculator-restaurare';
+import {
+  determinaCilindreeLitri,
+  type ComparableOffer,
+  type EvaluatorFairValueInput,
+  type EvaluatorFairValueOutput,
+} from '@/lib/agents/evaluator-fair-value';
 
 /** Rezultatul unei verificări de siguranță (Detectiv/Filtru) — tri-state,
  * ca să distingem „nimic de analizat" (sigur) de „agentul a eșuat" (fără
@@ -99,21 +105,79 @@ async function verificaGhidRar(admin: SupabaseClient, offerId: string, input: Gh
 
 /** Arheologul de Opțiuni — rulează DOAR dacă anunțul are un `note` de analizat (la fel ca
  * verificaAutenticitate); e 100% determinist (fără apel Claude), deci practic gratuit, dar
- * fără text n-are ce căuta. Bonusul e stocat, NU conectat la scorul real — vezi migrarea 0017. */
-async function verificaArheologulOptiuni(admin: SupabaseClient, offerId: string, note: string | null): Promise<void> {
-  if (!note?.trim()) return;
+ * fără text n-are ce căuta. Bonusul e stocat, NU conectat la scorul real — vezi migrarea 0017.
+ * Întoarce bonusul calculat (sau null) — Evaluatorul de Fair-Value are nevoie de el imediat,
+ * fără să reciteească rândul din DB (evită o cursă inutilă cu propriul UPDATE de mai sus). */
+async function verificaArheologulOptiuni(admin: SupabaseClient, offerId: string, note: string | null): Promise<number | null> {
+  if (!note?.trim()) return null;
   const result = await runAgent<ArheologulOptiuniInput, ArheologulOptiuniOutput>(
     'arheologul-optiuni',
     { text: note },
     { triggerSource: 'import_oferte', relatedOfferId: offerId }
   );
-  if (!result.ok) return;
+  if (!result.ok) return null;
   await admin
     .from('offers')
     .update({
       dotari_rare_detectate: result.data.dotari_rare_detectate,
       nota_raritate: result.data.nota_raritate,
       bonus_dotari_rare: result.data.bonus_dotari_rare,
+    })
+    .eq('id', offerId);
+  return result.data.bonus_dotari_rare;
+}
+
+/** Anunțurile comparabile pentru un model — folosite de Evaluatorul de Fair-Value ca bază de
+ * calcul (comps). Doar anunțuri aprobate, active sau vândute (status='sold' există în schemă
+ * dar nimic nu-l setează încă — pregătit pentru când urmărirea vânzărilor devine reală). */
+async function obtineComps(admin: SupabaseClient, modelCode: string, excludeOfferId: string): Promise<ComparableOffer[]> {
+  const { data } = await admin
+    .from('offers')
+    .select('price,year,cilindree_litri,bonus_dotari_rare')
+    .eq('model_code', modelCode)
+    .eq('moderation', 'approved')
+    .in('status', ['active', 'sold'])
+    .neq('id', excludeOfferId);
+  return (data ?? []).map((r) => ({
+    price: r.price,
+    year: r.year,
+    cilindreeLitri: r.cilindree_litri,
+    bonusDotariRare: r.bonus_dotari_rare,
+  }));
+}
+
+/**
+ * Evaluator de Fair-Value — determinist (fără Claude, vezi lib/agents/evaluator-fair-value.ts).
+ * Exportat separat de restul verificărilor din acest fișier fiindcă e singurul agent reutilizat
+ * și din afara fluxului de import: acțiunea admin de recalculare (admin/oferte/actions.ts) rulează
+ * exact aceeași logică pe o ofertă deja existentă, cu comps-uri (posibil) schimbate între timp.
+ */
+export async function calculeazaFairValuePentruOferta(
+  admin: SupabaseClient,
+  offerId: string,
+  offer: { model_code: string; title: string; note: string | null; price: number; year: number | null },
+  bonusDotariRare: number | null,
+  triggerSource: string
+): Promise<void> {
+  const cilindreeLitri = determinaCilindreeLitri(offer.model_code, offer.title, offer.note);
+  const comps = await obtineComps(admin, offer.model_code, offerId);
+
+  const result = await runAgent<EvaluatorFairValueInput, EvaluatorFairValueOutput>(
+    'evaluator-fair-value',
+    { price: offer.price, year: offer.year, cilindreeLitri, bonusDotariRare, comps },
+    { triggerSource, relatedOfferId: offerId }
+  );
+
+  const dateSuficiente = result.ok && !result.data.dateInsuficiente;
+  await admin
+    .from('offers')
+    .update({
+      cilindree_litri: cilindreeLitri,
+      fair_value_pret: dateSuficiente ? result.data.fairValuePret : null,
+      fair_value_eticheta: dateSuficiente ? result.data.eticheta : null,
+      fair_value_deviatie_procentuala: dateSuficiente ? result.data.deviatieProcentuala : null,
+      fair_value_comps_folosite: result.ok ? result.data.compsFolosite : 0,
+      fair_value_actualizat_la: new Date().toISOString(),
     })
     .eq('id', offerId);
 }
@@ -212,11 +276,21 @@ export async function applyImportPlan(
         anFabricatie: offer.year ?? null,
         verdictFiltruAntiFals: verdictFiltru,
       });
-      await verificaArheologulOptiuni(admin, insertedRow.id, offer.note ?? null);
+      const bonusDotariRare = await verificaArheologulOptiuni(admin, insertedRow.id, offer.note ?? null);
       await verificaCalculatorRestaurare(admin, insertedRow.id, {
         modelCode: offer.model_code,
         text: offer.note ?? null,
       });
+      // Evaluator de Fair-Value — rulează pe FIECARE ofertă (nu doar cele cu `note`),
+      // spre deosebire de ceilalți agenți de mai sus: cilindreea se poate deduce direct
+      // din denumirea comercială (ex. „300CE"), fără să fie nevoie de text liber.
+      await calculeazaFairValuePentruOferta(
+        admin,
+        insertedRow.id,
+        { model_code: offer.model_code, title: offer.title, note: offer.note ?? null, price: offer.price, year: offer.year ?? null },
+        bonusDotariRare,
+        'import_oferte'
+      );
 
       if (opts.autoModerate) {
         if (evalueazaGateAutoAprobare(rezDetectiv, rezFiltru)) {

@@ -6,7 +6,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { getTargetModels } from '@/lib/models';
 import { validateOffers, planOfferImport } from '@/lib/offers';
-import { applyImportPlan } from '@/lib/server/offers-import';
+import { applyImportPlan, calculeazaFairValuePentruOferta } from '@/lib/server/offers-import';
 import { logAudit } from '@/lib/audit';
 
 type AdminCheckResult = { error: string } | { user: User };
@@ -102,5 +102,37 @@ export async function rejectDraft(draftId: string): Promise<{ error: string } | 
 
   await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'reject_draft', draftId } });
   revalidatePath('/admin/oferte');
+  return { ok: true };
+}
+
+/**
+ * Recalculare la cerere a Evaluatorului de Fair-Value pentru o ofertă
+ * existentă — utilă fiindcă la import comps-urile disponibile pot fi puține
+ * (ex. „date insuficiente"), dar cresc pe măsură ce apar oferte noi pentru
+ * același model; un admin poate re-rula oricând, fără să aștepte un nou import.
+ */
+export async function recalculeazaFairValue(offerId: string): Promise<{ error: string } | { ok: true }> {
+  const check = await requireAdminUser();
+  if ('error' in check) return { error: check.error };
+
+  const admin = createAdminClient();
+  const { data: offer, error: offerErr } = await admin
+    .from('offers')
+    .select('id, model_code, title, note, price, year, bonus_dotari_rare')
+    .eq('id', offerId)
+    .single();
+  if (offerErr || !offer) return { error: 'Anunț negăsit.' };
+
+  await calculeazaFairValuePentruOferta(
+    admin,
+    offer.id,
+    { model_code: offer.model_code, title: offer.title, note: offer.note, price: offer.price, year: offer.year },
+    offer.bonus_dotari_rare,
+    'manual_admin'
+  );
+
+  await logAudit('admin_action', { userId: check.user.id, email: check.user.email, detail: { action: 'recalculate_fair_value', offerId } });
+  revalidatePath('/admin/oferte');
+  revalidatePath('/oferte');
   return { ok: true };
 }
