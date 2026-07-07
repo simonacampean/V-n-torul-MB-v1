@@ -287,7 +287,7 @@ export default function ListaMea({ models, items }: Props) {
         return (
           <RevealOnScroll key={l.id} delay={Math.min(idx * 40, 200)}>
           <article
-            className="card"
+            className="card hover-lift"
             style={{
               borderLeftColor: isChilipir ? 'var(--red)' : scoreColor(score),
               borderColor: isChilipir ? 'var(--red)' : undefined,

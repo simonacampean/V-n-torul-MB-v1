@@ -222,7 +222,7 @@ export default async function OfertePage({
               const updatedDays = daysAgo(o.last_seen);
               return (
                 <RevealOnScroll key={o.id} delay={Math.min(rank * 40, 200)}>
-                <article className={`offer ${isExc ? 'exc' : ''}`}>
+                <article className={`offer hover-lift ${isExc ? 'exc' : ''}`}>
                   <span className={`rank ${isExc ? 'pulse' : ''}`}>
                     #{rank + 1}
                     {isExc ? ' · EXCELENTĂ' : ''}

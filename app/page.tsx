@@ -4,6 +4,7 @@ import CarPhotoRow from '@/components/CarPhotoRow';
 import Icon from '@/components/Icon';
 import CommunityStats from '@/components/CommunityStats';
 import SuccessStories from '@/components/SuccessStories';
+import RevealOnScroll from '@/components/RevealOnScroll';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
@@ -29,7 +30,8 @@ export default async function Home() {
           {models.map((m, i) => (
             <div key={m.code}>
               {i === 2 && <AdSlot position="infeed" />}
-            <article className="card">
+            <RevealOnScroll delay={Math.min(i * 60, 200)}>
+            <article className="card hover-lift">
               <ModelPhoto code={m.code} alt={`${m.name} — fotografie de referință`} />
 
               <div className="row">
@@ -85,6 +87,7 @@ export default async function Home() {
                 </div>
               </div>
             </article>
+            </RevealOnScroll>
             </div>
           ))}
 

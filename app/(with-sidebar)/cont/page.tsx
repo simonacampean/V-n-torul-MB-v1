@@ -10,6 +10,7 @@ import {
 } from '@/lib/scoring';
 import { computeStreak } from '@/lib/streak';
 import AdSlot from '@/components/AdSlot';
+import RevealOnScroll from '@/components/RevealOnScroll';
 
 export default async function ContPage() {
   const supabase = await createClient();
@@ -84,29 +85,35 @@ export default async function ContPage() {
       )}
 
       <div className="grid3" style={{ marginTop: 16 }}>
-        <Link href="/cont/lista" className="statcard">
-          <div className="seclabel">▸ Anunțuri urmărite</div>
-          <div className="score">{fmt(watchlist.length)}</div>
-          <div className="meta mono" style={{ marginTop: 4 }}>
-            {fmt(candidates)} candidați (scor ≥ {CANDIDATE_THRESHOLD}) · {fmt(bargains)} chilipiruri active
-          </div>
-        </Link>
+        <RevealOnScroll delay={0}>
+          <Link href="/cont/lista" className="statcard hover-lift">
+            <div className="seclabel">▸ Anunțuri urmărite</div>
+            <div className="score">{fmt(watchlist.length)}</div>
+            <div className="meta mono" style={{ marginTop: 4 }}>
+              {fmt(candidates)} candidați (scor ≥ {CANDIDATE_THRESHOLD}) · {fmt(bargains)} chilipiruri active
+            </div>
+          </Link>
+        </RevealOnScroll>
 
-        <Link href="/cont/vanatoare" className="statcard">
-          <div className="seclabel">▸ Vânătoarea de azi</div>
-          <div className="score" style={{ color: huntedToday ? 'var(--green)' : 'var(--red)' }}>
-            {huntedToday ? '✓' : '—'}
-          </div>
-          <div className="meta mono" style={{ marginTop: 4 }}>
-            {huntedToday ? 'făcută — bravo' : 'nefăcută încă — deschide căutările'}
-          </div>
-        </Link>
+        <RevealOnScroll delay={60}>
+          <Link href="/cont/vanatoare" className="statcard hover-lift">
+            <div className="seclabel">▸ Vânătoarea de azi</div>
+            <div className="score" style={{ color: huntedToday ? 'var(--green)' : 'var(--red)' }}>
+              {huntedToday ? '✓' : '—'}
+            </div>
+            <div className="meta mono" style={{ marginTop: 4 }}>
+              {huntedToday ? 'făcută — bravo' : 'nefăcută încă — deschide căutările'}
+            </div>
+          </Link>
+        </RevealOnScroll>
 
-        <Link href="/oferte" className="statcard">
-          <div className="seclabel">▸ Top oferte</div>
-          <div className="score">→</div>
-          <div className="meta mono" style={{ marginTop: 4 }}>ierarhia calitate-preț per model</div>
-        </Link>
+        <RevealOnScroll delay={120}>
+          <Link href="/oferte" className="statcard hover-lift">
+            <div className="seclabel">▸ Top oferte</div>
+            <div className="score">→</div>
+            <div className="meta mono" style={{ marginTop: 4 }}>ierarhia calitate-preț per model</div>
+          </Link>
+        </RevealOnScroll>
       </div>
 
       <form action={signOut} style={{ marginTop: 24 }}>

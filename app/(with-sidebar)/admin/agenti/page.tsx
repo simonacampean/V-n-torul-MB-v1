@@ -5,6 +5,7 @@ import { fmt } from '@/lib/models';
 import type { TrendScoutReport } from '@/lib/agents/trend-scout';
 import { PIPELINES, type Pipeline } from '@/lib/agent-heartbeat';
 import EmptyState from '@/components/EmptyState';
+import RevealOnScroll from '@/components/RevealOnScroll';
 
 const PIPELINE_LABELS: Record<Pipeline, string> = {
   agent_report: 'Oferte noi (Partea A)',
@@ -169,7 +170,7 @@ export default async function AdminAgentiPage() {
         ▸ Agenți AI
       </div>
       <div className="grid3" style={{ marginTop: 8 }}>
-        {agents.map((agent) => {
+        {agents.map((agent, idx) => {
           const s = statsByAgent.get(agent.id);
           const total = s?.total ?? 0;
           const successRate = total ? Math.round(((s?.success ?? 0) / total) * 100) : null;
@@ -178,7 +179,8 @@ export default async function AdminAgentiPage() {
           const configured = agent.isConfigured ? agent.isConfigured() : true;
 
           return (
-            <div className="card flat" key={agent.id}>
+            <RevealOnScroll key={agent.id} delay={Math.min(idx * 40, 200)}>
+            <div className="card flat">
               <div className="row">
                 <div className="seclabel" style={{ margin: 0 }}>
                   ▸ {agent.name}
@@ -212,6 +214,7 @@ export default async function AdminAgentiPage() {
               )}
               {!s && <div className="meta mono" style={{ marginTop: 8 }}>Nicio execuție încă.</div>}
             </div>
+            </RevealOnScroll>
           );
         })}
       </div>

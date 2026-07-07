@@ -16,6 +16,7 @@ import RecalculeazaFairValueButton from '@/components/RecalculeazaFairValueButto
 import type { RaportAutenticitate } from '@/lib/agents/detectiv-autenticitate';
 import type { FiltruAntiFalsOutput } from '@/lib/agents/filtru-anti-fals';
 import type { FairValueEticheta } from '@/lib/agents/evaluator-fair-value';
+import RevealOnScroll from '@/components/RevealOnScroll';
 
 export default async function AdminOfertePage() {
   const supabase = await createClient();
@@ -93,8 +94,9 @@ export default async function AdminOfertePage() {
 
       {!pending?.length && <EmptyState>Nimic de moderat momentan.</EmptyState>}
 
-      {(pending ?? []).map((o) => (
-        <article key={o.id} className="card">
+      {(pending ?? []).map((o, idx) => (
+        <RevealOnScroll key={o.id} delay={Math.min(idx * 40, 200)}>
+        <article className="card">
           <div className="row">
             <div>
               <span className="plate sm">{o.model_code}</span> <b>{o.title}</b>
@@ -136,6 +138,7 @@ export default async function AdminOfertePage() {
             <ModerareOferta offerId={o.id} />
           </div>
         </article>
+        </RevealOnScroll>
       ))}
 
       <div className="seclabel" style={{ marginTop: 24 }}>
@@ -146,8 +149,9 @@ export default async function AdminOfertePage() {
         an/cilindree/dotări apropiate) — recalculează pe cerere pe măsură ce mai apar oferte noi.
       </p>
       {!active?.length && <EmptyState>Niciun anunț activ momentan.</EmptyState>}
-      {(active ?? []).map((o) => (
-        <article key={o.id} className="card flat" style={{ marginBottom: 8 }}>
+      {(active ?? []).map((o, idx) => (
+        <RevealOnScroll key={o.id} delay={Math.min(idx * 30, 180)}>
+        <article className="card flat" style={{ marginBottom: 8 }}>
           <div className="row">
             <div>
               <span className="plate sm">{o.model_code}</span> <b>{o.title}</b>
@@ -175,6 +179,7 @@ export default async function AdminOfertePage() {
             <RecalculeazaFairValueButton offerId={o.id} />
           </div>
         </article>
+        </RevealOnScroll>
       ))}
     </main>
   );
