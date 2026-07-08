@@ -12,9 +12,11 @@ import {
   addWatchlistItem, updateCriterion, updateStatus, updateCond, addPriceUpdate, deleteWatchlistItem,
 } from '@/app/(with-sidebar)/cont/lista/actions';
 import PriceSparkline from '@/components/PriceSparkline';
+import ModelTrendChart from '@/components/charts/ModelTrendChart';
 import Icon from '@/components/Icon';
 import EmptyState from '@/components/EmptyState';
 import RevealOnScroll from '@/components/RevealOnScroll';
+import type { TrendPoint } from '@/lib/trends';
 
 export interface WatchlistItem {
   id: string;
@@ -36,13 +38,13 @@ export interface WatchlistItem {
   negociere_actualizata_la: string | null;
 }
 
-type Props = { models: TargetModel[]; items: WatchlistItem[] };
+type Props = { models: TargetModel[]; items: WatchlistItem[]; trends?: Record<string, TrendPoint[]> };
 
 const emptyForm = (defaultModel: string) => ({
   model_code: defaultModel, title: '', price: '', url: '', year: '', km: '', note: '', cond: '2',
 });
 
-export default function ListaMea({ models, items }: Props) {
+export default function ListaMea({ models, items, trends = {} }: Props) {
   const router = useRouter();
   const bandOf = useMemo(
     () => Object.fromEntries(models.map((m) => [m.code, { lo: m.band_lo, hi: m.band_hi }])),
@@ -346,6 +348,10 @@ export default function ListaMea({ models, items }: Props) {
                 </span>
               </div>
             )}
+            <div style={{ marginTop: 8 }}>
+              <ModelTrendChart data={trends[l.model_code] ?? []} variant="compact" />
+            </div>
+
             {l.note && <div style={{ fontSize: 14, color: 'var(--inksoft)', marginTop: 6 }}>{l.note}</div>}
 
             {l.indice_urgenta_negociere != null && (

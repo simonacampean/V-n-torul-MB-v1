@@ -27,6 +27,7 @@ const ADMIN_LINKS = [
   { href: '/admin/publicitate', label: 'Publicitate' },
   { href: '/admin/modele', label: 'Modele țintă' },
   { href: '/admin/platforme', label: 'Platforme' },
+  { href: '/admin/tendinte', label: 'Tendințe de piață' },
 ];
 
 export default function ContSidebar({ email, isAdmin }: { email: string | null; isAdmin: boolean }) {

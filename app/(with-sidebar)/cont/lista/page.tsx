@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { getTargetModels } from '@/lib/models';
+import { getModelTrends } from '@/lib/trends';
 import ListaMea, { type WatchlistItem } from '@/components/ListaMea';
 
 export default async function ListaMeaPage() {
@@ -15,7 +16,7 @@ export default async function ListaMeaPage() {
     redirect('/verifica-2fa?redirect_to=/cont/lista');
   }
 
-  const [{ models }, { data: items }] = await Promise.all([
+  const [{ models }, { data: items }, trends] = await Promise.all([
     getTargetModels(),
     supabase
       .from('watchlist_items')
@@ -24,12 +25,13 @@ export default async function ListaMeaPage() {
       )
       .eq('user_id', user.id)
       .order('created_at', { ascending: false }),
+    getModelTrends(),
   ]);
 
   return (
     <div>
       <h1 className="page-title">Lista mea</h1>
-      <ListaMea models={models} items={(items as WatchlistItem[] | null) ?? []} />
+      <ListaMea models={models} items={(items as WatchlistItem[] | null) ?? []} trends={trends} />
     </div>
   );
 }

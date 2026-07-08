@@ -10,7 +10,9 @@ import CalculatorRestaurareBadge from '@/components/CalculatorRestaurareBadge';
 import FairValueBadge from '@/components/FairValueBadge';
 import EmptyState from '@/components/EmptyState';
 import RevealOnScroll from '@/components/RevealOnScroll';
+import ModelTrendChart from '@/components/charts/ModelTrendChart';
 import type { FairValueEticheta } from '@/lib/agents/evaluator-fair-value';
+import { getModelTrends } from '@/lib/trends';
 
 export async function generateMetadata({
   searchParams,
@@ -80,7 +82,7 @@ export default async function OfertePage({
     data: { user },
   } = await supabase.auth.getUser();
 
-  const { models } = await getTargetModels();
+  const [{ models }, trends] = await Promise.all([getTargetModels(), getModelTrends()]);
 
   let query = supabase
     .from('offers')
@@ -249,6 +251,7 @@ export default async function OfertePage({
                       <small>/100</small>
                     </div>
                   </div>
+                  <ModelTrendChart data={trends[o.model_code] ?? []} variant="compact" />
                   {/* Semnal primar — ce contează pentru decizie, greutate vizuală plină. */}
                   <div className="obadges">
                     {o.options === 'full' && <span className="ob full">FULL OPTIONS</span>}

@@ -5,12 +5,14 @@ import Icon from '@/components/Icon';
 import CommunityStats from '@/components/CommunityStats';
 import SuccessStories from '@/components/SuccessStories';
 import RevealOnScroll from '@/components/RevealOnScroll';
+import ModelTrendChart from '@/components/charts/ModelTrendChart';
 import { getTargetModels, galleryUrl, fmt } from '@/lib/models';
+import { getModelTrends } from '@/lib/trends';
 
 export const revalidate = 3600; // conținutul modelelor se schimbă rar
 
 export default async function Home() {
-  const { models } = await getTargetModels();
+  const [{ models }, trends] = await Promise.all([getTargetModels(), getModelTrends()]);
 
   return (
     <>
@@ -63,6 +65,8 @@ export default async function Home() {
               </div>
 
               <p className="thesis">{m.thesis}</p>
+
+              <ModelTrendChart data={trends[m.code] ?? []} variant="full" />
 
               <div className="tags">
                 {m.tags.map((t) => (
